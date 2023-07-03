@@ -9,7 +9,7 @@ void misc::printInFile(std::string fileName, unsigned int n, ...)
     va_start(args, n);
 
     // Pointer, auf das vektor array der Argumente
-    std::vector<double> **arrayp = (std::vector<double> **)malloc(n * sizeof(double *));
+    std::vector<double> **arrayp = new vector<double>*[n * sizeof(double *)];
 
     for (unsigned int arg = 0; arg < n; ++arg)
     {
@@ -30,7 +30,7 @@ void misc::printInFile(std::string fileName, unsigned int n, ...)
 
     va_end(args);
     file.close();
-    free(arrayp);
+    delete[] arrayp;
 }
 
 vector<double> operator*(const double alpha, const vector<double> &v)
@@ -139,6 +139,16 @@ double misc::sekant(func_type f, const double xa, const double xe, double eps)
         x0 = fabs(x0);
 
     return x0;
+}
+
+double misc::norm(const vector<double> &y)
+{
+    double norm = 0;
+    for (double elem : y)
+        norm += elem*elem;
+    norm = sqrt(norm);
+
+    return norm;
 }
 
 double misc::bisection(func_type f, double xa, double xe, const double eps)

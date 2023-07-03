@@ -18,14 +18,15 @@ $(BIN): $(COBJ)
 	$(CC) $(CFLAGS) $^ -o $@ -pthread
 
 $(BUILDDIR)/%.o: %.cpp	
-	$(CC) $(CFLAGS) -c $^ -o $@ 
+	$(CC) $(CFLAGS) -c $^ -o $@
 
 clean:
 	rm -r $(BUILDDIR)
 
 test: test.cpp misc.cpp
-	$(CC) $(CFLAGS) $^ -o test -pthread
+	$(CC) $(CFLAGS) $^ -o test
 	./test
+	rm -r test
 
 
 echo:

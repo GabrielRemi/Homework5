@@ -10,7 +10,7 @@ if (len(data[0,:]) == 3):
 
 
 plt.subplots()
-plt.plot(x, y)
+plt.plot(x, y, linestyle = "--", zorder = 4)
 if (len(data[0,:]) == 3):
-    plt.plot(x, z, linestyle="--")
+    plt.plot(x, z, zorder = 0)
 plt.show()

@@ -40,13 +40,15 @@ namespace misc
     die mit dem header <functional> eingebunden wird. Diese Verallgemeinerung ist für diesen Code nötig*/
     double sekant(func_type f, const double xa, const double xe, double eps);
 
+    // Berechne die euklidische Norm eines vektors
+    double norm(const vector<double> &y);
+
     /*Berechne im gegebenen Interval die Nullstelle einer Funktion <f> mit dem Bisektionsverfahren. <eps> ist die Zielgenauigkeit*/
     double bisection(func_type f, double xa, double xe, const double eps);
 
-
     /*Berechnet einen vector mit äquidistanten elementen, wobei <h> die maximale Schrittweite ist*/
     vector<double> equidistantValues(const double x0, const double xmax, double &h);
-    
+
     // entferne aus einer vector<double> Datenstruktur alle Elemente, die den Wert NAN haben
     vector<double> eraseNAN(vector<double> &vec);
 
@@ -65,7 +67,7 @@ namespace misc
 
     // eine Funktion, die die datenstruktur <values> auf die function <func> abbildet und in einem vektor abspeichert
     std::vector<double> assignValues(const std::vector<double> &values, func_type func);
-    
+
     /*Setzte jedes Element von <vec> iterativ in die Funktion <f> ein und speichere die Ergebnisse in einem neuen vector ab.
     Nutze dabei multithreading um den Prozessor vollständig auszunutzen.*/
     vector<double> assignValuesMultithread(vector<double> &vec, func_type f);
