@@ -9,7 +9,7 @@ BIN = $(BUILDDIR)/app
 
 all: mkdirs $(BIN)
 	$(BIN)
-	python3 plots.py
+	
 
 mkdirs:
 	mkdir -p $(BUILDDIR)
