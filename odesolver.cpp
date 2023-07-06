@@ -85,11 +85,11 @@ vector<double> ODESolver::residual()
     return residual;
 }
 
-vector<double> ODESolver::residual(const vector<double> &f, const vector<double> &v, unsigned int level)
+vector<double> ODESolver::residual(const vector<double> &gvec, const vector<double> &svec, const vector<double> &v, unsigned int level)
 {
     // Breche das Programm ab, wenn f ungleiche viele Elemente wie v hat
     unsigned long size = v.size();
-    if (f.size() != size)
+    if (!(gvec.size() == size && svec.size() == size))
     {
         fprintf(stderr, "ODESolver::residual: vektoren besitzen unterschiedlich viele Elemente\n");
         exit(-1);
@@ -98,18 +98,17 @@ vector<double> ODESolver::residual(const vector<double> &f, const vector<double>
     double h = pow(2, level - 1) * stepwidth; // Die Schritweite in der Matrix A hängt vom level ab
     double hh = h * h;
 
-    residual[0] = (-2 * v[0] + v[1]) / hh + f[0];
-    residual[size - 1] = (v[size - 2] - 2 * v[size - 1]) / hh + f[size - 1];
+    residual[0] = (-2 * v[0] + v[1]) / hh + gvec[0] * v[0] - svec[0];
+    residual[size - 1] = (v[size - 2] - 2 * v[size - 1]) / hh + gvec[size - 1] * v[size - 1] - svec[size - 1];
     for (unsigned long i = 1; i < size - 1; ++i)
-        residual[i] = (v[i - 1] - 2 * v[i] + v[i + 1]) / hh + f[i];
+        residual[i] = (v[i - 1] - 2 * v[i] + v[i + 1]) / hh + gvec[i] * v[i] - svec[i];
 
     return residual;
 }
 
 double ODESolver::get_residual_norm()
 {
-    calc_fvec();
-    vector<double> res = residual();
+    vector<double> res = residual(this->gvec, this->svec, this->u, 1);
 
     return misc::norm(res);
 }
@@ -190,77 +189,65 @@ void ODESolver::smoother(vector<double> &x, const vector<double> &f, const unsig
         x[i] = (1 - relaxation) * x[i] + relaxation * 0.5 * (x[i - 1] + x[i + 1] + hh * f[i]);
 }
 
-void ODESolver::gauss_seidel()
+void ODESolver::gauss_seidel(vector<double> &u, vector<double> &gvec, vector<double> &svec, unsigned int level)
 {
-    double step_squared = stepwidth * stepwidth;
+    unsigned long size = u.size();
+    if (!(size == svec.size() && size == gvec.size()))
+    {
+        fprintf(stderr, "Fehler gauss_seidel: vektoren müssen gleich viele Elemente besitzen\n");
+        exit(-1);
+    }
+    double h = pow(2, level - 1) * stepwidth; // Die Schritweite in der Matrix A hängt vom level ab
+    double step_squared = h * h;
 
     u[0] = (1 - relaxation) * u[0] + relaxation * (u[1] - step_squared * svec[0]) / (2 - step_squared * gvec[0]);
-    u[vector_size - 1] = (1 - relaxation) * u[vector_size - 1] + relaxation * (u[vector_size - 2] - step_squared * svec[vector_size - 1]) / (2 - step_squared * gvec[vector_size - 1]);
+    u[size - 1] = (1 - relaxation) * u[size - 1] + relaxation * (u[size - 2] - step_squared * svec[size - 1]) / (2 - step_squared * gvec[size - 1]);
 
-    for (unsigned long i = 1; i < vector_size - 1; ++i)
+    for (unsigned long i = 1; i < size - 1; ++i)
         u[i] = (1 - relaxation) * u[i] + relaxation * (u[i + 1] + u[i - 1] - step_squared * svec[i]) / (2 - step_squared * gvec[i]);
 }
 
-double ODESolver::twolevel_method(vector<double> &u, vector<double> &f, unsigned int pre_smooth, unsigned int post_smooth, unsigned int level)
+void ODESolver::twolevel_method(vector<double> &u, vector<double> &gvec, vector<double> &svec, unsigned int pre_smooth, unsigned int post_smooth, unsigned int level)
 {
     /* In allen Schritten werden die Residuen und Fehler an den Randpunkten nicht beachtet, da diese immer 0 sind. Dies führt zu einer Verschiebung der Indizes im Vergleich
     zu den mathematischen Formeln*/
     // GLÄTTUNG
     for (unsigned int i = 0; i < pre_smooth; ++i)
-    {
-        // Da auf level 1 f von u abhängt, muss dieses nach jeder Glättoperation angepasst werden
-        if (level == 1)
-            calc_fvec();
-        smoother(u, f, level);
-    }
+        gauss_seidel(u, gvec, svec, level);
 
-    vector<double> residual_fine_grid = residual(f, u, level);
-    vector<double> residual_coarse_grid = restrict(residual_fine_grid);
-    unsigned long coarse_grid_size = residual_coarse_grid.size();
+    // if (level + 1 == max_level)
+    // {
+    //     error_coarse_grid = thomas_algorithm(residual_coarse_grid, 2 * stepwidth);
+    // }
+    if (level < max_level)
+    {
+        vector<double> residual_fine_grid = residual(gvec, svec, u, level);
+        vector<double> residual_coarse_grid = restrict(residual_fine_grid);
+        unsigned long coarse_grid_size = residual_coarse_grid.size();
 
-    // BERECHNE FEHLER AUF NIEDRIGSTEM LEVEL
-    vector<double> error_coarse_grid(coarse_grid_size);
-    if (level + 1 == max_level)
-    {
-        error_coarse_grid = thomas_algorithm(residual_coarse_grid, 2 * stepwidth);
-    }
-    else
-    {
-        vector<double> f(coarse_grid_size);
-        for (unsigned long i = 0; i < coarse_grid_size; ++i)
-            f[i] = residual_coarse_grid[i];
-        twolevel_method(error_coarse_grid, f, pre_smooth, post_smooth, level + 1);
-    }
+        // BERECHNE FEHLER AUF NIEDRIGSTEM LEVEL
+        vector<double> error_coarse_grid(coarse_grid_size);
         
-    vector<double> error_fine_grid = interpolate(error_coarse_grid);
-    // error_fine_grid = thomas_algorithm(residual_fine_grid, stepwidth);
+        vector<double> gvec(coarse_grid_size);
+        vector<double> svec(coarse_grid_size);
+        for (int i = 0; i < coarse_grid_size; ++i)
+        {
+            svec[i] = -residual_coarse_grid[i];
+            gvec[i] = 0;
+        }
+        twolevel_method(error_coarse_grid, gvec, svec, pre_smooth, post_smooth, level + 1);
 
-    // ADDIERE FEHLER ZU <u>
-    for (unsigned long i = 0; i < coarse_grid_size; ++i)
-        u[i] += error_fine_grid[i];
+        vector<double> error_fine_grid = interpolate(error_coarse_grid);
+        // error_fine_grid = thomas_algorithm(residual_fine_grid, stepwidth);
+
+        // ADDIERE FEHLER ZU <u>
+        for (unsigned long i = 0; i < coarse_grid_size; ++i)
+            u[i] += error_fine_grid[i];
+    }
 
     // NACH-GLÄTTUNG
     for (unsigned int i = 0; i < post_smooth; ++i)
-    {
-        if (level == 1)
-            calc_fvec();
-        smoother(u, f, level);
-    }
-
-    if (level == 1)
-        return get_residual_norm();
-    else return 0;
-}
-
-double ODESolver::vcycle(unsigned int pre_smooth, unsigned int post_smooth, unsigned int maxlevel)
-{
-    // Glättung von <u>
-    for (unsigned int i = 0; i < pre_smooth; ++i)
-        gauss_seidel();
-
-    vector<double> residual_fine_grid = residual();
-
-    return 0;
+        gauss_seidel(u, gvec, svec, level);
 }
 
 unsigned long ODESolver::solve(double eps)
@@ -272,8 +259,7 @@ unsigned long ODESolver::solve(double eps)
     while (current_eps > eps && iteration < iteration_max)
     {
         ++iteration;
-        calc_fvec();
-        smoother(u, fvec, 1);
+        gauss_seidel(u, gvec, svec, 1);
 
         current_eps = get_residual_norm();
         // printf("old functional: %.5e, new functional: %.5e, eps: %.5e", old_functional, new_functional, current_eps);
@@ -291,8 +277,10 @@ unsigned long ODESolver::solve(double eps, unsigned int pre_smooth, unsigned int
 
     while (eps_iter > eps && iteration < iteration_max)
     {
-        eps_iter = twolevel_method(u, fvec, pre_smooth, post_smooth, 1);
+        twolevel_method(u, gvec, svec, pre_smooth, post_smooth, 1);
+        eps_iter = get_residual_norm();
         iteration += pre_smooth + post_smooth;
+        //++iteration;
     }
 
     if (iteration == iteration_max)

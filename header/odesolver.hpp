@@ -27,7 +27,7 @@ private:
     vector<double> residual();
 
     // Berechnet den Residuenvektor für eine Näherungslösung des Fehlers in einem Grid-level. Das Residuum wird berechnet mit der Gleichung r = f - Av
-    vector<double> residual(const vector<double> &f, const vector<double> &v, unsigned int level);
+    vector<double> residual(const vector<double> &gvec, const vector<double> &svec, const vector<double> &v, unsigned int level);
 
     // führt eine Restriktion auf das nächst gröbere Gitter durch vom momentanen level
     vector<double> restrict(const vector<double> &vec);
@@ -62,10 +62,9 @@ public:
     void set_stepwidth(double h);
     double get_residual_norm(); // Konvergenzkriterium, Berechnet momentanes Residuum
 
-    void gauss_seidel(); // gauss-seidel-Verfahren
-    double twolevel_method(vector<double> &u, vector<double> &f, unsigned int pre_smooth,
+    void gauss_seidel(vector<double> &u, vector<double> &gvec, vector<double> &svec, unsigned int level); // gauss-seidel-Verfahren
+    void twolevel_method(vector<double> &u, vector<double> &gvec, vector<double> &svec, unsigned int pre_smooth,
                            unsigned int post_smooth, unsigned int level);                    // Löst die DGL mit dem zweigitter verfahren
-    double vcycle(unsigned int pre_smooth, unsigned int post_smooth, unsigned int maxlevel); // Löst die DGL mit dem V-Zyklus des Multigrid-Verfahrens
     unsigned long solve(double eps);                                                         // Löst die DGL mit gewünschter Zielgenauigkeit des Residuuma
     unsigned long solve(double eps, unsigned int pre_smooth, unsigned int post_smooth);      // löst die DGL mit dem Zwei-Gitter-Zyklus
 

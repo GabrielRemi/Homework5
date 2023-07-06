@@ -10,7 +10,6 @@ BIN = $(BUILDDIR)/app
 all: mkdirs $(BIN)
 	$(BIN)
 	
-
 mkdirs:
 	mkdir -p $(BUILDDIR)
 
@@ -28,6 +27,8 @@ test: test.cpp misc.cpp
 	./test
 	rm -r test
 
+login:
+	ssh s6garemi@cip-pool.physik.uni-bonn.de
 
 echo:
 	echo $(CFILES)
