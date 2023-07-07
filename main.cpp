@@ -6,14 +6,19 @@
 
 using namespace std;
 
-double gfunc(double const x)
+double g(double const x)
 {
-    return (1. + x * x);
+    return -1;
 }
 
-double sfunc(double const x)
+double s(double const x)
 {
-    return (-1.);
+    return -0.5 * x * exp(-x);
+}
+
+double analytic(double x)
+{
+    return 0.125 * x * (1 + x) * exp(-x);
 }
 
 int main()
@@ -24,10 +29,11 @@ int main()
     gettimeofday(&start, NULL);
 #endif
 
-    ODESolver dgl(-1., 1., 256, gfunc, sfunc);
-    dgl.max_level = 2;
+    ODESolver dgl(0, 20., 1000, g, s);
+    dgl.max_level = 5;
     unsigned long iteration = dgl.solve(1e-10, 4, 4);
-    fprintf(stdout, "Level: %d, Iterationen: %lu, Residuum: %.5e\n", dgl.max_level, iteration, dgl.get_residual_norm());
+    fprintf(stdout, "Level: %d Gitter %lu, Iterationen: %lu, Residuum: %.5e\n", dgl.max_level, dgl.get_vector_size() + 1, iteration, dgl.get_residual_norm());
+    dgl.printInFile("test.txt", analytic);
 
 #if TIME_MEASURING
     gettimeofday(&end, NULL);

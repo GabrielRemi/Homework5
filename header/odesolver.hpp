@@ -20,7 +20,6 @@ private:
     vector<double> gvec;
     vector<double> svec;
     vector<double> fvec;
-    void calc_fvec(void);
 
     // MULTIGRIDFUNKTIONEN
     
@@ -36,6 +35,10 @@ private:
     // Berechnet von Gleichung A*x = y den Vektor x mit dem Thomas-Algorithmus, wobei A die Matrix der Differenzengleichung der numerischen DGL Lösung ist mit Schrittweite <h>
     vector<double> thomas_algorithm(const vector<double> &y, const double h);
 
+
+    void gauss_seidel(vector<double> &u, vector<double> &gvec, vector<double> &svec, unsigned int level); // gauss-seidel-Verfahren
+    void twolevel_method(vector<double> &u, vector<double> &gvec, vector<double> &svec, unsigned int pre_smooth,
+                           unsigned int post_smooth, unsigned int level);                    // Löst die DGL mit dem zweigitter verfahren
 public:
     // Randbedingungen
     double start_point;
@@ -51,14 +54,13 @@ public:
     // Getter und Setter
     vector<double> get_x(); // gibt die Vektoren MIT randwerten wieder
     vector<double> get_u();
+    void set_u(vector<double> src); // u ohne Randwerte 
     unsigned long get_vector_size() { return vector_size; }
     double get_stepwidth() { return stepwidth; }
     void set_stepwidth(unsigned long n);
     double get_residual_norm(); // Konvergenzkriterium, Berechnet momentanes Residuum
+    void set_max_level(unsigned int n); // Setze das maximale level so, dass auf diesem das Gitter n Elemente besitzt
 
-    void gauss_seidel(vector<double> &u, vector<double> &gvec, vector<double> &svec, unsigned int level); // gauss-seidel-Verfahren
-    void twolevel_method(vector<double> &u, vector<double> &gvec, vector<double> &svec, unsigned int pre_smooth,
-                           unsigned int post_smooth, unsigned int level);                    // Löst die DGL mit dem zweigitter verfahren
     unsigned long solve(double eps);                                                         // Löst die DGL mit gewünschter Zielgenauigkeit des Residuuma
     unsigned long solve(double eps, unsigned int pre_smooth, unsigned int post_smooth);      // löst die DGL mit dem Zwei-Gitter-Zyklus
 

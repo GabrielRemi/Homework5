@@ -1,5 +1,7 @@
 #include "header/odesolver.hpp"
 
+#define THOMAS 0
+
 ODESolver::ODESolver(double xa, double xe, unsigned long n, func_type g, func_type s, double init_value)
 {
     this->start_point = xa;
@@ -24,8 +26,6 @@ ODESolver::ODESolver(double xa, double xe, unsigned long n, func_type g, func_ty
 
     gvec = misc::assignValues(x, g);
     svec = misc::assignValues(x, s);
-
-    fvec.resize(vector_size);
 }
 
 void ODESolver::set_stepwidth(unsigned long n)
@@ -35,38 +35,35 @@ void ODESolver::set_stepwidth(unsigned long n)
     // Kontrolliert, ob n eine Potenz von 2 ist
     double exponent = log(n) / log(2);
     if (exponent != int(exponent))
-        n = pow(2, ceil(exponent));
-    vector_size = n - 1;
+        this->n = pow(2, ceil(exponent));
+    else
+        this->n = n;
+    vector_size = this->n - 1;
 
-    this->stepwidth = xDelta / n;
+    this->stepwidth = xDelta / this->n;
 }
 
 vector<double> ODESolver::get_x()
 {
-    vector<double> out(n);
-    for (unsigned long i = 0; i < vector_size; ++i)
-        out[i + 1] = x[i];
+    vector<double> out(n + 1);
     out[0] = start_point;
-    out[n - 1] = end_point;
+    out[n] = end_point;
+    for (unsigned long i = 1; i < n; ++i)
+        out[i] = x[i - 1];
 
     return out;
 }
 
 vector<double> ODESolver::get_u()
 {
-    vector<double> out(n);
-    for (unsigned long i = 0; i < vector_size; ++i)
-        out[i + 1] = u[i];
+
+    vector<double> out(n + 1);
     out[0] = 0;
-    out[n - 1] = 0;
+    out[n] = 0;
+    for (unsigned long i = 1; i < n; ++i)
+        out[i] = u[i - 1];
 
     return out;
-}
-
-void ODESolver::calc_fvec(void)
-{
-    for (unsigned long i = 0; i < vector_size; ++i)
-        fvec[i] = gvec[i] * u[i] - svec[i];
 }
 
 vector<double> ODESolver::residual(const vector<double> &gvec, const vector<double> &svec, const vector<double> &v, unsigned int level)
@@ -180,6 +177,56 @@ void ODESolver::gauss_seidel(vector<double> &u, vector<double> &gvec, vector<dou
 
 void ODESolver::twolevel_method(vector<double> &u, vector<double> &gvec, vector<double> &svec, unsigned int pre_smooth, unsigned int post_smooth, unsigned int level)
 {
+#if THOMAS == 1
+    /* In allen Schritten werden die Residuen und Fehler an den Randpunkten nicht beachtet, da diese immer 0 sind. Dies führt zu einer Verschiebung der Indizes im Vergleich
+    zu den mathematischen Formeln*/
+    // GLÄTTUNG
+    if (level < max_level)
+        for (unsigned int i = 0; i < pre_smooth; ++i)
+            gauss_seidel(u, gvec, svec, level);
+
+    vector<double> error_fine_grid;
+    if (level < max_level)
+    {
+        vector<double> residual_fine_grid = residual(gvec, svec, u, level);
+        vector<double> residual_coarse_grid = restrict(residual_fine_grid);
+
+        unsigned long fine_grid_size = residual_fine_grid.size();
+        unsigned long coarse_grid_size = residual_coarse_grid.size();
+
+        // BERECHNE FEHLER AUF NIEDRIGSTEM LEVEL
+        vector<double> error_coarse_grid(coarse_grid_size);
+
+        vector<double> gvec(coarse_grid_size);
+        vector<double> svec(coarse_grid_size);
+        for (unsigned long i = 0; i < coarse_grid_size; ++i)
+        {
+            svec[i] = -residual_coarse_grid[i];
+            gvec[i] = 0;
+        }
+        twolevel_method(error_coarse_grid, gvec, svec, pre_smooth, post_smooth, level + 1);
+        error_fine_grid = interpolate(error_coarse_grid);
+        // for (unsigned long i = 0; i < u.size(); ++i)
+        //     u[i] += error_fine_grid[i];
+    }
+    else
+    {
+        vector<double> f(svec.size());
+        for (int i = 0; i < svec.size(); ++i)
+            f[i] = -svec[i];
+        error_fine_grid = thomas_algorithm(f, pow(2, level - 1) * stepwidth);
+    }
+
+    // ADDIERE FEHLER ZU <u>
+    for (unsigned long i = 0; i < u.size(); ++i)
+        u[i] += error_fine_grid[i];
+
+    // NACH-GLÄTTUNG
+    if (level < max_level)
+        for (unsigned int i = 0; i < post_smooth; ++i)
+            gauss_seidel(u, gvec, svec, level);
+#elif THOMAS == 0
+
     /* In allen Schritten werden die Residuen und Fehler an den Randpunkten nicht beachtet, da diese immer 0 sind. Dies führt zu einer Verschiebung der Indizes im Vergleich
     zu den mathematischen Formeln*/
     // GLÄTTUNG
@@ -190,9 +237,8 @@ void ODESolver::twolevel_method(vector<double> &u, vector<double> &gvec, vector<
     {
         vector<double> residual_fine_grid = residual(gvec, svec, u, level);
 
-
         vector<double> residual_coarse_grid = restrict(residual_fine_grid);
-        
+
         unsigned long fine_grid_size = residual_fine_grid.size();
         unsigned long coarse_grid_size = residual_coarse_grid.size();
 
@@ -218,6 +264,7 @@ void ODESolver::twolevel_method(vector<double> &u, vector<double> &gvec, vector<
     // NACH-GLÄTTUNG
     for (unsigned int i = 0; i < post_smooth; ++i)
         gauss_seidel(u, gvec, svec, level);
+#endif
 }
 
 unsigned long ODESolver::solve(double eps)
@@ -225,7 +272,7 @@ unsigned long ODESolver::solve(double eps)
     double current_eps = 2 * eps; // Anfangswerte muss größer als eps sein
 
     unsigned long iteration = 0;
-    unsigned long iteration_max = 10000000;
+    unsigned long iteration_max = 80000;
     while (current_eps > eps && iteration < iteration_max)
     {
         ++iteration;
@@ -241,13 +288,14 @@ unsigned long ODESolver::solve(double eps)
 unsigned long ODESolver::solve(double eps, unsigned int pre_smooth, unsigned int post_smooth)
 {
     unsigned int iteration = 0;
-    const unsigned int iteration_max = 10000000;
+    const unsigned int iteration_max = 80000;
 
     double eps_iter = 2 * eps; // willkürlicher Wert, hauptsache größer eps
 
     while (eps_iter > eps && iteration < iteration_max)
     {
         twolevel_method(u, gvec, svec, pre_smooth, post_smooth, 1);
+        
         eps_iter = get_residual_norm();
         // iteration += pre_smooth + post_smooth;
         ++iteration;
@@ -257,6 +305,19 @@ unsigned long ODESolver::solve(double eps, unsigned int pre_smooth, unsigned int
         fprintf(stderr, "Warnung: Konvergenz nicht eingetrofen\n");
 
     return iteration;
+}
+
+void ODESolver::set_max_level(unsigned int n)
+{
+    max_level = log(this->n / n) / log(2) + 1;
+}
+
+void ODESolver::set_u(vector<double> src)
+{
+    if (src.size() == vector_size)
+        this->u = src;
+    else
+        fprintf(stderr, "Warnung set_u(): u konnte nicht gesetzt werden, da die vektorlänge nicht übereinstimmt\n");
 }
 
 void ODESolver::printInFile(string fileName)
@@ -270,7 +331,7 @@ void ODESolver::printInFile(string fileName, func_type f)
 {
     vector<double> x = get_x();
     vector<double> u = get_u();
-    vector<double> analytic = misc::assignValuesMultithread(x, f);
+    vector<double> analytic = misc::assignValues(x, f);
 
     misc::printInFile(fileName, 3, &x, &u, &analytic);
 }
