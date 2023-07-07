@@ -9,8 +9,8 @@ class ODESolver
 {
 private:
     double stepwidth;          // Schrittweite
-    unsigned long n;           // Anzahl der Elemente mit Randwerten
-    unsigned long vector_size; // Anzahl der Elemente OHNE Randwerten, also n - 2
+    unsigned long n;           // Höchster Index des gröbsten Giters (mit Randwerten)
+    unsigned long vector_size; // Anzahl der Elemente OHNE Randwerten, also n - 1s
 
     // Beide Vektoren ohne Randwerte
     vector<double> x;
@@ -23,9 +23,7 @@ private:
     void calc_fvec(void);
 
     // MULTIGRIDFUNKTIONEN
-    // Berechnet Residuenvektor für einen Näherungslösungsvektor <u>
-    vector<double> residual();
-
+    
     // Berechnet den Residuenvektor für eine Näherungslösung des Fehlers in einem Grid-level. Das Residuum wird berechnet mit der Gleichung r = f - Av
     vector<double> residual(const vector<double> &gvec, const vector<double> &svec, const vector<double> &v, unsigned int level);
 
@@ -34,10 +32,6 @@ private:
 
     // Interpoliert einen Vektor auf das nächste feinere level
     vector<double> interpolate(const vector<double> &vec);
-
-    /*Glätter nach dem Gauß-Seidel Verfahren für die Vektorgleichung A*x = f für den Fall, dass f nicht von x abhängt.
-    Wird im Multigrid-Verfahren verwendet, um den Fehler auf einem Gitter eines levels zu bestimmen*/
-    void smoother(vector<double> &x, const vector<double> &f, const unsigned int level);
 
     // Berechnet von Gleichung A*x = y den Vektor x mit dem Thomas-Algorithmus, wobei A die Matrix der Differenzengleichung der numerischen DGL Lösung ist mit Schrittweite <h>
     vector<double> thomas_algorithm(const vector<double> &y, const double h);
@@ -59,7 +53,7 @@ public:
     vector<double> get_u();
     unsigned long get_vector_size() { return vector_size; }
     double get_stepwidth() { return stepwidth; }
-    void set_stepwidth(double h);
+    void set_stepwidth(unsigned long n);
     double get_residual_norm(); // Konvergenzkriterium, Berechnet momentanes Residuum
 
     void gauss_seidel(vector<double> &u, vector<double> &gvec, vector<double> &svec, unsigned int level); // gauss-seidel-Verfahren
@@ -71,7 +65,8 @@ public:
     void printInFile(string fileName);              // speichert <x> und <u> in einer Datei
     void printInFile(string fileName, func_type f); // speichert <x> und <u> sowie die analytische Lösung in einer Datei
 
-    // Konstruktor der Klasse. Muss immer die Randbedingungen sowie die maximale Schrittweite und dgl spezifizieren
-    // <init_value> ist der Wert, der allen Werten im <u> vektor anfangs gegeben wird
-    ODESolver(double _start_point, double _end_point, double stepwidth, func_type g, func_type s, double init_value = 0);
+    /* Konstruktor der Klasse. Muss immer die Randpunkte sowie den maximalen Index (muss Potenz von 2 sein) des gröbsten Gitters
+    als Argumente annehmen sowie die Funktionen, die die dgl spezifizieren.
+    <init_value> ist der Wert, der allen Werten im <u> vektor anfangs gegeben wird (standardmäßig 0)*/
+    ODESolver(double _start_point, double _end_point, unsigned long n, func_type g, func_type s, double init_value = 0);
 };

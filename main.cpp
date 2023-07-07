@@ -6,6 +6,15 @@
 
 using namespace std;
 
+double gfunc(double const x)
+{
+    return (1. + x * x);
+}
+
+double sfunc(double const x)
+{
+    return (-1.);
+}
 
 int main()
 {
@@ -15,7 +24,10 @@ int main()
     gettimeofday(&start, NULL);
 #endif
 
-
+    ODESolver dgl(-1., 1., 256, gfunc, sfunc);
+    dgl.max_level = 2;
+    unsigned long iteration = dgl.solve(1e-10, 4, 4);
+    fprintf(stdout, "Level: %d, Iterationen: %lu, Residuum: %.5e\n", dgl.max_level, iteration, dgl.get_residual_norm());
 
 #if TIME_MEASURING
     gettimeofday(&end, NULL);

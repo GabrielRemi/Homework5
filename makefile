@@ -20,7 +20,7 @@ $(BUILDDIR)/%.o: %.cpp
 	$(CC) $(CFLAGS) -c $^ -o $@
 
 clean:
-	rm -r $(BUILDDIR)
+	rm -r $(BUILDDIR) zg.nh*
 
 test: test.cpp misc.cpp
 	$(CC) $(CFLAGS) $^ -o test
@@ -29,6 +29,11 @@ test: test.cpp misc.cpp
 
 login:
 	ssh s6garemi@cip-pool.physik.uni-bonn.de
+
+reference:
+	gcc zg-full.c $(CFLAGS) -o zg -lm
+	./zg
+	rm -r zg
 
 echo:
 	echo $(CFILES)
