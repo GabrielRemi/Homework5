@@ -52,8 +52,8 @@ public:
     func_type s;
 
     // Getter und Setter
-    vector<double> get_x(); // gibt die Vektoren MIT randwerten wieder
-    vector<double> get_u();
+    vector<double> get_x(bool boundaries = true); // gibt die Vektoren MIT randwerten wieder
+    vector<double> get_u(bool boundaries = true);
     void set_u(vector<double> src); // u ohne Randwerte 
     unsigned long get_vector_size() { return vector_size; }
     double get_stepwidth() { return stepwidth; }
@@ -61,8 +61,8 @@ public:
     double get_residual_norm(); // Konvergenzkriterium, Berechnet momentanes Residuum
     void set_max_level(unsigned int n); // Setze das maximale level so, dass auf diesem das Gitter n Elemente besitzt
 
-    unsigned long solve(double eps);                                                         // Löst die DGL mit gewünschter Zielgenauigkeit des Residuuma
-    unsigned long solve(double eps, unsigned int pre_smooth, unsigned int post_smooth);      // löst die DGL mit dem Zwei-Gitter-Zyklus
+    void gauss_seidel(); // gauss Seidel -Verfahren speziell für Näherungslösung der DGL
+    unsigned long solve(double eps, vector<double> *u_norms = nullptr, unsigned int pre_smooth = 1, unsigned int post_smooth = 1);      // löst die DGL mit dem Zwei-Gitter-Zyklus, u_norm speichert das skalar von u nach jeder Iteration
 
     void printInFile(string fileName);              // speichert <x> und <u> in einer Datei
     void printInFile(string fileName, func_type f); // speichert <x> und <u> sowie die analytische Lösung in einer Datei

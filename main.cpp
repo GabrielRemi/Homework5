@@ -6,19 +6,49 @@
 
 using namespace std;
 
-double g(double const x)
+// Berechnet für Aufgabe 1 für das angebene maximale Level den Iterationsverlauf der Norm der Näherungslösung
+void calc_u_norm(unsigned int level)
 {
-    return -1;
+    unsigned int exponent = 7;
+    unsigned long n = pow(2, exponent);
+    // Bedingungen der Anfangslösung
+    for (unsigned int wn = 1; wn < n - 1; wn += 10)
+    {
+        unsigned int wave_number = wn;
+        char fileName[50];
+        sprintf(fileName, "results/unorm_aufgabe1_level%d_k%d", level, wave_number);
+
+        ODESolver dgl(0, M_PI, n, nullptr, nullptr, 0);
+
+        double h = dgl.get_stepwidth();
+        double eps = 0.1 * h * h;
+
+        // initiiere Anfangslösung
+        vector<double> x = dgl.get_x(false);
+        vector<double> u = misc::assignValues(x, [&](double x)
+                                              { return sin(wave_number * x); });
+        dgl.set_u(u);
+
+        vector<double> u_norms;
+        dgl.max_level = level;
+        unsigned int iterations = dgl.solve(eps, &u_norms, 1, 1);
+        fprintf(stdout, "[level] %u, [Wellenzahl] %u, Iterationen: %u, Genauigkeit: %.5e\n", level, wave_number, dgl.get_residual_norm());
+
+        vector<double> iter_values(iterations);
+        for (unsigned int i = 0; i < iterations; ++i)
+            iter_values[i] = (double)(i + 1);
+        misc::printInFile(fileName, 2, &iter_values, &u_norms);
+    }
 }
 
-double s(double const x)
+void aufgabe_1()
 {
-    return -0.5 * x * exp(-x);
+    for (int i = 1; i <= 5; ++i)
+        calc_u_norm(i);
 }
 
-double analytic(double x)
+void aufgabe_2()
 {
-    return 0.125 * x * (1 + x) * exp(-x);
 }
 
 int main()
@@ -29,11 +59,8 @@ int main()
     gettimeofday(&start, NULL);
 #endif
 
-    ODESolver dgl(0, 20., 1000, g, s);
-    dgl.max_level = 5;
-    unsigned long iteration = dgl.solve(1e-10, 4, 4);
-    fprintf(stdout, "Level: %d Gitter %lu, Iterationen: %lu, Residuum: %.5e\n", dgl.max_level, dgl.get_vector_size() + 1, iteration, dgl.get_residual_norm());
-    dgl.printInFile("test.txt", analytic);
+    aufgabe_1();
+    aufgabe_2();
 
 #if TIME_MEASURING
     gettimeofday(&end, NULL);
