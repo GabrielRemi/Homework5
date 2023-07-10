@@ -60,16 +60,12 @@ public:
     double get_stepwidth() { return stepwidth; }
     void set_stepwidth(unsigned long n);
     double get_residual_norm();         // Konvergenzkriterium, Berechnet momentanes Residuum
-    void set_max_level(unsigned int n); // Setze das maximale level so, dass auf Diesem das Gitter n Elemente besitzt
 
     void gauss_seidel(); // gauss Seidel -Verfahren speziell für Näherungslösung der DGL
 
     /* löst die DGL mit dem V-zyklus, u_norm speichert das skalar von u nach jeder Iteration, res_norm das skalare Residuum nach jeder Iteration (falls kein nullptr).
     pre_smooth und post_smooth bestimmen die Anzahl der Glättungsoperationen auf jedem level vor und nach der Korrektur. Falls s_relative = true wird das Abbruchkriterium relativ zu s(x) ausgewertet */
     unsigned long solve(double eps, vector<double> *u_norms = nullptr, vector<double> *res_norms = nullptr, unsigned int pre_smooth = 1, unsigned int post_smooth = 1);
-
-    void printInFile(string fileName);              // speichert <x> und <u> in einer Datei
-    void printInFile(string fileName, func_type f); // speichert <x> und <u> sowie die analytische Lösung in einer Datei
 
     /* Konstruktor der Klasse. Muss immer die Randpunkte sowie den maximalen Index (muss Potenz von 2 sein) des gröbsten Gitters
     als Argumente annehmen sowie die Funktionen, die die dgl spezifizieren.

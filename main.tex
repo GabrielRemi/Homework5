@@ -151,7 +151,17 @@ In dieser Aufgabe wird das folgende Randwertproblem betrachtet:
     u''(x) - \omega^2 u(x) = s(x) = -\frac{1}{2} x \mathrm{e}^{-x} , \quad u(0) = 0 , \quad \lim_{x \to \infty} u(x) = 0.
 \end{equation*} Hierbei wird die Randbedingung bei großen $x$ durch $u(x) = 0$ für $x \geq R_{\mathrm{max}} = 20$ approximiert. Außerdem wird $\omega = 1$ gesetzt.\\ \\
 1. Zuerst soll eine Erwartung an den Effizienzgewinn durch Einsatz des Multigrid-Verfahrens für das gegebene Randwertproblem gegeben werden. Aus der Vorlesung ist bekannt, dass für das Multigrid-Verfahren eine gute Glättung erwartet wird, wenn die Amplitude
-der Fourier-Transformierten von $s(t) = -\frac{1}{2}t \mathrm{e}{-t}$ \\
+der Fourier-Transformierten von $s(t) = -\frac{1}{2}t \mathrm{e}^{-t}$ für niedrige Frequenzen sehr groß ist. Berechne:
+\begin{align*}
+    \tilde{s}(\omega) &= \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty} \dd{t} s(\abs{t}) \mathrm{e}^{-\mathrm{i}\omega t} \\
+    &= -\frac{1}{\sqrt{8\pi}} \int_{-\infty}^{\infty} \dd{t} \abs{t} \mathrm{e}^{-\abs{t}} \mathrm{e}^{-\mathrm{i}\omega t} \\
+    &= \frac{1}{\sqrt{8\pi}} \left( \int_{-\infty}^{0} \dd{t} t \mathrm{e}^{(1 - \mathrm{i}\omega)t} - \int_{0}^{\infty} \dd{t} t \mathrm{e}^{-(1 + \mathrm{i}\omega)t} \right) \\
+    &= \frac{1}{\sqrt{8\pi}} \left( \frac{1}{(\mathrm{i} + \omega)^2} - \frac{1}{(1 + \mathrm{i}\omega)^2}\right) \\
+    &= \frac{1}{\sqrt{2\pi}} \frac{\omega^2 - 1}{(1 + \omega^2)^2} .
+\end{align*} Hierbei wurde ausgenutzt, dass die Lösungsfunktion $u$ aufgrund der gegebenen Randbedingungen nur für $x \geq 0$ (bzw $t \geq 0$ wegen einer Variablenumbenennung) definiert ist und deshalb auch $s(t)$ nur
+für $t \geq 0$ betrachtet werden darf. Deshalb muss bei der Berechnung der Fourier-Transformation beachtet werden, dass das Argument der Funktion $s(t)$ mit einem Betrag versehen wird, da sonst das betrachtete Integral divergiert.
+Hier ist nun deutlich zu erkennen, dass für Frequenzen nahe $0$ die Amplitude der Fourier-Transformierten extrem groß wird, womit nach obiger Begründung ein hoher Effizienzgewinn durch Einsatz des Multigrid-Verfahrens für das betrachtete
+Randwertproblem erwartet werden kann. \\
 
 \noindent 2. Für diesen Aufgabenteil (und die weiteren Aufgabenteile) wird das Multigrid-Verfahren mit V-Zyklus für das gegebene Randwertproblem mit Diskretisierung $x_j = j \cdot h$, $j = 0 , \dots 2^N$ implementiert, wobei analog
 wie in der ersten Aufgabe vorgegangen wird. Hierbei soll $2^N = 8$ immer das gröbste Gitter darstellen. Auf diesem Gitter wird dann das entstehende lineare Gleichungssystem mit dem in der Vorlesung vorgestellten Tridiagonalmatrix-Algorithmus gelöst.

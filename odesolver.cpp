@@ -252,7 +252,8 @@ void ODESolver::twolevel_method(vector<double> &u, vector<double> &gvec, vector<
                 u[i] += error_fine_grid[i];
         }
     }
-    else
+    // MULTIGRID OHNE THOMAS-ALGORITHMUS
+    else 
     {
         // GLÄTTUNG
         for (unsigned int i = 0; i < pre_smooth; ++i)
@@ -329,10 +330,6 @@ unsigned long ODESolver::solve(double eps, vector<double> *u_norms, vector<doubl
     return iteration;
 }
 
-void ODESolver::set_max_level(unsigned int n)
-{
-    max_level = log(this->n / n) / log(2) + 1;
-}
 
 void ODESolver::set_u(vector<double> src)
 {
@@ -340,20 +337,4 @@ void ODESolver::set_u(vector<double> src)
         this->u = src;
     else
         fprintf(stderr, "Warnung set_u(): u konnte nicht gesetzt werden, da die vektorlänge nicht übereinstimmt\n");
-}
-
-void ODESolver::printInFile(string fileName)
-{
-    vector<double> x = get_x();
-    vector<double> u = get_u();
-    misc::printInFile(fileName, 2, &x, &u);
-}
-
-void ODESolver::printInFile(string fileName, func_type f)
-{
-    vector<double> x = get_x();
-    vector<double> u = get_u();
-    vector<double> analytic = misc::assignValues(x, f);
-
-    misc::printInFile(fileName, 3, &x, &u, &analytic);
 }
