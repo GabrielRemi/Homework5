@@ -47,8 +47,17 @@ des betrachteten Randwertproblems. Nun soll das in der Vorlesung vorgestellte Mu
 
 \noindent 
 1. Zunächst wird das Multigrid-Verfahren für den V-Zyklus ($\gamma = 1$) mit variabler Anzahl von Levels implementiert. Dabei geht der Multigrid-Zyklus von einer Näherungslösung $v_h$ für das Gleichungsystem $A_h u_h = f_h$ auf dem
-feinsten Gitter $G_h$ mit Schrittweite $h$ aus. Hier wird der Algorithmus beispielhaft für zwei Levels vorgestellt. In einem ersten Schritt (Glättung) werden mit dem Gauß-Seidel-Verfahren $\nu_{\mathrm{pre}}$ Dämpfungsschritte durchgeführt, es wird also $w_h = \mathcal{G}(R)^{\nu_{\mathrm{pre}}} v_h$ (hierbei ist $R$ der Relaxationsparameter) berechnet.
-In einem zweiten Schritt (Restriktion und Rekursion) wird der Residuenvektor $r_h = f_h - A_h w_h$ berechnet. Es müssen nun zwei Fälle unterschieden werden. Falls $h<h_{\mathrm{max}}$ (das gröbste Gitter ist noch nicht erreicht), wird aus dem Residuenvektor die neue rechte Seite für das gröbere
+feinsten Gitter $G_h$ mit Schrittweite $h$ aus. Es wird das Gauss-Seidel Verfahren als Glättoperator verwendet und für beide Aufgaben eine lineare Differentialgleichung
+angenommen, weshalb die Matrix unter diesen Bedingungen folgende Form bekommt:
+\[(A_h)_{ij} = \frac{1}{h^2}
+\begin{cases}
+2 - h^2g_i & i = j\\
+-1 & i = j\pm 1\\
+0 & \text{sonst}
+\end{cases} \qquad i,j\in[1,N-1]\]
+Hier wird der Algorithmus beispielhaft für zwei Levels vorgestellt. In einem ersten Schritt (Glättung) werden mit dem Gauß-Seidel-Verfahren $\nu_{\mathrm{pre}}$ Dämpfungsschritte durchgeführt, es wird also $w_h = \mathcal{G}(R)^{\nu_{\mathrm{pre}}} v_h$ (hierbei ist $R$ der Relaxationsparameter) berechnet.
+In einem zweiten Schritt (Restriktion und Rekursion) wird der Residuenvektor $r_h = f_h - A_h w_h$ berechnet. 
+Es müssen nun zwei Fälle unterschieden werden. Falls $h<h_{\mathrm{max}}$ (das gröbste Gitter ist noch nicht erreicht), wird aus dem Residuenvektor die neue rechte Seite für das gröbere
 Gitter $f_{2h} = \mathcal{I}_h^{2h} r_h$ berechnet. Der Projektionsoperator $\mathcal{I}_h^{2h}$ bildet ein Feld $w_h$ von einem feineren auf das gröbere Gitter gemäß folgender Abbildungsvorschrift ab:
 \begin{equation*}
     \mathcal{I}_h^{2h} : G_h \rightarrow G_{2h} , \quad w_h \mapsto \mathcal{I}_h^{2h} w_h = w_{2h} .
@@ -69,7 +78,18 @@ gröberen Gitter $G_{2h}$ durch Prolongation nach $G_h$ abgebildet wird und die 
     w_h \leftarrow \mathcal{G}(R)^{\nu_{\mathrm{post}}} w_h .
 \end{equation*} Falls im zweiten Schritt bereits $h = h_{\mathrm{max}}$ gilt, so wird $A_{h_{\mathrm{max}}} e_{h_{\mathrm{max}}} = r_{h_{\mathrm{max}}}$ (hier ist $e_h$ der Fehler zwischen der Näherungslösung und der exakten Lösung) gelöst und gemäß $w_h \leftarrow w_h + e_h$ aktualisiert. Dann erfolgt sofort der vierte Schritt (Glättung).
 Im allgemeinen Fall für eine variable Anzahl von Levels wird in dem zweiten Schritt auf jedem Level $m$ mit Gitter $G_{2^{m-1}h}$ ($m \geq 1$) der Residuenvektor projiziert und es wird in das nächste Level
-$m+1$ mit Gitter $G_{2^m h}$ gegangen. Beim Wiederaufstieg werden automatisch alle Lösungen auf den einzelnen Levels aktualisiert.\newpage
+$m+1$ mit Gitter $G_{2^m h}$ gegangen. Beim Wiederaufstieg werden automatisch alle Lösungen auf den einzelnen Levels aktualisiert.\\
+Das Multigrid-Verfahren ist somit ein rekursives Zweigitter-Verfahren, womit der Fehler $e_{2h}$ auf dem groben Gitter besser approximiert werden und die Konvergenz schneller erreicht werden sollte.\\\par
+Im Code wird zum Lösen einer Differentialgleichung ein Objekt der Klasse \verb|ODESolver| erstellt, dessen Konstruktor als Parameter die Randpunkte, Gitterfeinheit sowie die 
+DGL-spezifizierenden Funktionen $g(x)$ und $s(x)$ annimmt.  Der Relaxationsparameter kann über die Variable \verb|ODESolver.relaxation| eingestellt werden, die Anzahl der 
+level mit \verb|ODESolver.max_level|. Optional kann auf dem gröbsten Gitter der Tridiagonalmatrix-Algorithmus zur Berechnung des Fehlers eingeschaltet werden mit dem boolean 
+\verb|ODESolver.thomas = true|. Sobald die gewünschten Bedingungen gesetzt wurden, kann die Differentialgleichung gelöst werden mit der Funktion 
+\begin{verbatim}
+    ODESolver.solve(double eps, vector<double> *u_norms, vector<double> *res_norms, 
+    unsigned int pre_smooth, unsigned int post_smooth)
+\end{verbatim}
+wobei \verb|eps| die gewünschte Zielgenauigkeit und die Integer Parameter die Vor- und Nachglättunszahlen $\nu_{pre}$ und $\nu_{post}$ sind. Mit den Beiden Vektoren können optional 
+die Normen vom Residuum und der Lösung pro Iterationsschritt abgefangen werden.\newpage
 
 \noindent 2. Nun wird das Programm getestet. Der Lösungsalgorithmus wird auf dem feinsten Gitter mit den folgenden anfänglichen Näherungslösungen gestartet:
 \begin{equation*}
@@ -88,27 +108,33 @@ Außerdem wird auf jedem Level $\nu_{\mathrm{pre}} = \nu_{\mathrm{post}} = 1$ al
 (siehe Abbildungen \ref{fig:h1_level1}, \ref{fig:h1_level2}, \ref{fig:h1_level3}, \ref{fig:h1_level4} und \ref{fig:h1_level5}).
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.6\textwidth,scale=0.7]{h1_level1}
-    \caption[Dämpfungswirkung des Multigrid-Verfahrens bei Level 1.]{Dämpfungswirkung des Multigrid-Verfahrens bei Level 1.}\label{fig:h1_level1}
+    \begin{minipage}{0.45\linewidth}
+        \centering
+        \includegraphics[width= \linewidth,scale=0.7]{h1_level1}
+        \caption[Level 1]{Dämpfungswirkung Level 1}\label{fig:h1_level1}
+    \end{minipage}
+     \hspace{0.5cm}
+    \begin{minipage}{0.45\linewidth}
+        \includegraphics[width=\linewidth,scale=0.7]{h1_level2}
+        \caption[Level 2]{Dämpfungswirkung level 2}\label{fig:h1_level2}
+    \end{minipage}
 \end{figure}
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.6\textwidth,scale=0.7]{h1_level2}
-    \caption[Dämpfungswirkung des Multigrid-Verfahrens bei Level 2.]{Dämpfungswirkung des Multigrid-Verfahrens bei Level 2.}\label{fig:h1_level2}
+    \begin{minipage}{0.45\linewidth}
+        \centering
+        \includegraphics[width= \linewidth,scale=0.7]{h1_level3}
+        \caption[Level 3]{Dämpfungswirkung Level 3}\label{fig:h1_level3}
+    \end{minipage}
+     \hspace{0.5cm}
+    \begin{minipage}{0.45\linewidth}
+        \includegraphics[width=\linewidth,scale=0.7]{h1_level4}
+        \caption[Level 4]{Dämpfungswirkung level 4}\label{fig:h1_level4}
+    \end{minipage}
 \end{figure}
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.6\textwidth,scale=0.7]{h1_level3}
-    \caption[Dämpfungswirkung des Multigrid-Verfahrens bei Level 3.]{Dämpfungswirkung des Multigrid-Verfahrens bei Level 3.}\label{fig:h1_level3}
-\end{figure}
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.6\textwidth,scale=0.7]{h1_level4}
-    \caption[Dämpfungswirkung des Multigrid-Verfahrens bei Level 4.]{Dämpfungswirkung des Multigrid-Verfahrens bei Level 4.}\label{fig:h1_level4}
-\end{figure}
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.6\textwidth,scale=0.7]{h1_level5}
+    \includegraphics[width=0.5\linewidth]{h1_level5}
     \caption[Dämpfungswirkung des Multigrid-Verfahrens bei Level 5.]{Dämpfungswirkung des Multigrid-Verfahrens bei Level 5.}\label{fig:h1_level5}
 \end{figure} Tatsächlich ist eine Steigerung der Dämpfungswirkung durch das Multigrid-Verfahren zu erkennen, da bei steigendem Level des Multigrid-Verfahrens für verschiedene Wellenzahlen immer weniger Iterationsschritte benötigt werden, sodass die Norm der Näherungslösung
 gegen die Norm der exakten Lösung konvergiert. Um diese Verbesserung eindeutig zu erkennen, werden nochmal die verschiedenen Level in einem gemeinsamen Plot dargestellt (siehe Abbildung \ref{fig:h1_level_comparison}), indem für jedes Level die Norm der Näherungslösung gegen die Iterationszahl für $k = 1$ aufgetragen wird.
@@ -133,22 +159,24 @@ In jedem Fall wird $\nu_{\mathrm{pre}} = \nu_{\mathrm{post}} = 1$ und Relaxation
 
 \noindent 3. Zunächst wird die Konvergenzgeschwindigkeit mit dem Multigrid-Verfahren mit nur einem Level (Gauß-Seidel-Verfahren) für feinste Gitter mit $N = 4,6,8,10,12$ verglichen, indem die Norm des Residuums in Abhängigkeit von der
 Iterationszahl dargestellt wird. Bei der Implementierung wird die relative Genauigkeit $\epsilon_{\mathrm{rel}} = 10^{-3} \cdot h^2$ (relativ zur Norm von $s(x)$) verwendet.
-\begin{figure}[htbp]
+\begin{figure}[h]
     \centering
-    \includegraphics[width=0.6\textwidth,scale=0.7]{h2_N_comparison_1}
+    \includegraphics[width=0.6\textwidth]{h2_N_comparison_1}
     \caption[Vergleich der Konvergenzgeschwindigkeit des Gauß-Seidel-Verfahrens für $N = 4,6,8,10,12$.]{Vergleich der Konvergenzgeschwindigkeit des Gauß-Seidel-Verfahrens für $N = 4,6,8,10,12$.}\label{fig:h2_N_comparison_1}
 \end{figure} In der Abbildung \ref{fig:h2_N_comparison_1} ist der Vergleich der Konvergenzgeschwindigkeit für verschiedene $N$ dargestellt. Es ist zu erkennen, dass
 die Konvergenzgeschwindigkeit für kleinere $N$ stark zunimmt, da weniger Iterationen benötigt werden, sodass die Norm des Residuums gegen $0$ konvergiert.\\
 
-\noindent 4. In diesem Aufgabenteil wird geprüft, wie die Konvergenzgeschwindigkeit mit dem Multigrid-Verfahren von der Schrittweite $h$ abhängt. Dafür wird die Norm des Residuums in Abhängigkeit von der Iterationszahl dargestellt, indem für $N = 4,6,8,10,12$
-jeweils zwei unterschiedliche Level (also unterschiedliche Schrittweiten) verglichen werden. Auch hier wird wieder die relative Genauigkeit $\epsilon_{\mathrm{rel}} = 10^{-3} \cdot h^2$ als Abbruchkriterium verwendet. Die Ergebnisse sind in der Abbildung
+\noindent 4. In diesem Aufgabenteil wird geprüft, wie die Konvergenzgeschwindigkeit mit dem Multigrid-Verfahren von der Schrittweite $h$ abhängt. Dafür wie die für jedes gewählte $N$ die Anzahl
+der zur Konvergenz benötigten Iterationen verglichen. Auch hier wird wieder die relative Genauigkeit $\epsilon_{\mathrm{rel}} = 10^{-3} \cdot h^2$ als Abbruchkriterium verwendet. Die Ergebnisse sind in der Abbildung
 \ref{fig:h2_last_plot} dargestellt.
-\begin{figure}[htbp]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=0.6\textwidth,scale=0.7]{h2_last_plot}
+    \includegraphics[width=0.6\textwidth]{h2_last_plot}
     \caption[Vergleich der Konvergenzgeschwindigkeit.]{Vergleich der Konvergenzgeschwindigkeit.}\label{fig:h2_last_plot}
-\end{figure} Es ist zu erkennen, dass bei verschiedenen Werten $N$ die Konvergenzgeschwindigkeit für höhere Level des Multigrid-Verfahrens extrem stark zunimmt, da weniger Iterationsschritte benötigt werden, sodass die Norm des Residuums
-gegen $0$ konvergiert. Somit kann als Ergebnis festgehalten werden, dass die Konvergenzgeschwindigkeit des Multigrid-Verfahrens für größer werdende Level zunimmt, was gröber werdenden Gittern und einer größer werdenden Schrittweite entspricht.
+\end{figure} Es ist zu erkennen, dass bei verschiedenen Werten $N$ die Konvergenzgeschwindigkeit für höhere Level des Multigrid-Verfahrens extrem stark zunimmt. \\
+Somit kann als Ergebnis festgehalten werden,
+ dass die Konvergenzgeschwindigkeit des Multigrid-Verfahrens für größer werdende Level zunimmt, was gröber werdenden Gittern und einer größer werdenden Schrittweite entspricht.\\
+Dies ist nicht das zu erwartende Ergebnis, da eine von der Schrittweite unabhängige Konvergenzgeschwindigkeit erwartet wurde.
 
 \newpage
 

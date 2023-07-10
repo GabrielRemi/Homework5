@@ -33,24 +33,6 @@ void misc::printInFile(std::string fileName, unsigned int n, ...)
     delete[] arrayp;
 }
 
-vector<double> operator*(const double alpha, const vector<double> &v)
-{
-    vector<double> out;
-    for (double elem : v)
-        out.push_back(alpha * elem);
-
-    return out;
-}
-
-vector<double> operator*(const vector<double> &v, const vector<double> &w)
-{
-    vector<double> out;
-    for (unsigned int i = 0; i < v.size(); ++i)
-        out.push_back(v[i] * w[i]);
-
-    return out;
-}
-
 std::vector<double> misc::assignValues(const std::vector<double> &values, func_type func)
 {
     unsigned int size = values.size();
@@ -84,40 +66,3 @@ double misc::norm(const vector<double> &y)
     return norm;
 }
 
-vector<double> misc::assignValuesMultithread(vector<double> &vec, func_type f)
-{
-    const unsigned int SIZE = vec.size();
-    const unsigned int NUM_THREADS = thread::hardware_concurrency();
-    const unsigned int ELEM_PER_THREAD = (int)(SIZE / NUM_THREADS);
-    const unsigned int REST_ELEM = SIZE % NUM_THREADS;
-    vector<double> output(SIZE);
-
-    /*Lambda Ausdruck. Setzte jedes Element von <vec> iterativ ab Index <startindex> bis
-    ausschließlich <endIndex> in die Funktion <f> ein.*/
-    auto assignValues = [&](vector<double> vec, const unsigned int startIndex, const unsigned int endIndex, func_type f)
-    {
-        for (unsigned int i = startIndex; i < endIndex; ++i)
-            output[i] = f(vec[i]);
-    };
-
-    // Erstelle die maximale Anzahl an threads mit einem smart-pointer
-    unique_ptr<thread[]> threads(new thread[NUM_THREADS]);
-
-    // WEISE JEDEM THREAD EINEN BLOCK DES VECTORS ZU, DEN ER BERECHNET
-    for (unsigned int i = 0; i < NUM_THREADS; ++i)
-    {
-        unsigned int startIndex = i * ELEM_PER_THREAD;
-        unsigned int endIndex = (i + 1) * ELEM_PER_THREAD;
-        // Letzter Thread könnte mehr Elemente übrig haben
-        if (i == NUM_THREADS - 1)
-            endIndex += REST_ELEM;
-
-        threads[i] = thread(assignValues, vec, startIndex, endIndex, f);
-    }
-
-    // BEENDE THREADS
-    for (unsigned int i = 0; i < NUM_THREADS; ++i)
-        threads[i].join();
-
-    return output;
-}

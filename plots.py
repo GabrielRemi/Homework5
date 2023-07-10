@@ -27,7 +27,7 @@ plt.savefig('../figs/h1_comparison_plot_1', dpi = 250)
 #3.
 
 #Level 1
-fig4, ax4 = plt.subplots(figsize = (4, 6), dpi = 250)
+fig4, ax4 = plt.subplots(figsize = (5, 4.5), dpi = 250)
 data_level1_k1 = np.loadtxt("unorm_aufgabe1_level1_k1")
 iterations_level1_k1 = data_level1_k1[:, 0]
 u_norm_level1_k1 = data_level1_k1[:,1]
@@ -48,7 +48,7 @@ ax4.legend()
 plt.savefig('../figs/h1_level1', dpi = 250)
 
 #Level 2
-fig5, ax5 = plt.subplots(figsize = (4, 6), dpi = 250)
+fig5, ax5 = plt.subplots(figsize = (5, 4.5), dpi = 250)
 data_level2_k1 = np.loadtxt("unorm_aufgabe1_level2_k1")
 iterations_level2_k1 = data_level2_k1[:, 0]
 u_norm_level2_k1 = data_level2_k1[:,1]
@@ -69,7 +69,7 @@ ax5.legend()
 plt.savefig('../figs/h1_level2', dpi = 250)
 
 #Level 3
-fig6, ax6 = plt.subplots(figsize = (4, 6), dpi = 250)
+fig6, ax6 = plt.subplots(figsize = (5, 4.5), dpi = 250)
 data_level3_k1 = np.loadtxt("unorm_aufgabe1_level3_k1")
 iterations_level3_k1 = data_level3_k1[:, 0]
 u_norm_level3_k1 = data_level3_k1[:,1]
@@ -90,7 +90,7 @@ ax6.legend()
 plt.savefig('../figs/h1_level3', dpi = 250)
 
 #Level 4
-fig7, ax7 = plt.subplots(figsize = (4, 6), dpi = 250)
+fig7, ax7 = plt.subplots(figsize = (5, 4.5), dpi = 250)
 data_level4_k1 = np.loadtxt("unorm_aufgabe1_level4_k1")
 iterations_level4_k1 = data_level4_k1[:, 0]
 u_norm_level4_k1 = data_level4_k1[:,1]
@@ -111,7 +111,7 @@ ax7.legend()
 plt.savefig('../figs/h1_level4', dpi = 250)
 
 #Level 5
-fig8, ax8 = plt.subplots(figsize = (4, 6), dpi = 250)
+fig8, ax8 = plt.subplots(figsize = (5, 4.5), dpi = 250)
 data_level5_k1 = np.loadtxt("unorm_aufgabe1_level5_k1")
 iterations_level5_k1 = data_level5_k1[:, 0]
 u_norm_level5_k1 = data_level5_k1[:,1]

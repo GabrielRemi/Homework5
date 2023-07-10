@@ -1,3 +1,5 @@
+/*KOMPILIER- UND AUSFÜHRBEFEHL: make
+AUSFÜHRDAUER: 5 sekunden*/
 #include "odesolver.hpp"
 #include <limits>
 #include <sys/time.h>
@@ -15,8 +17,9 @@ void calc_u_norm(unsigned int level)
     unsigned int exponent = 7;
     unsigned long n = pow(2, exponent);
     // Bedingungen der Anfangslösung
-    unsigned int wave_numbers[4] = {1, 40, 80, 120};
-    for (unsigned int i = 0; i < 4; ++i)
+    unsigned int wave_numbers[] = {1, 21, 41, 61, 81, 101, 121};
+    unsigned int wave_size = sizeof(wave_numbers) / sizeof(unsigned int);
+    for (unsigned int i = 0; i < wave_size; ++i)
     {
         unsigned int wave_number = wave_numbers[i];
         char fileName[50];
@@ -103,6 +106,7 @@ void aufgabe_2()
     unsigned int n_size = sizeof(n) / sizeof(int);
     for (int i = 0; i < n_size; ++i)
     {
+        // Berechnet dgl einmal ohne und einmal mit multigrid
         calc_res_norm(false, n[i]);
         calc_res_norm(true, n[i]);
     }
@@ -117,7 +121,7 @@ int main()
 #endif
 
     aufgabe_1();
-   aufgabe_2();
+    aufgabe_2();
 
 #if TIME_MEASURING
     gettimeofday(&end, NULL);
