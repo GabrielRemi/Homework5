@@ -27,7 +27,7 @@ plt.savefig('../figs/h1_comparison_plot_1', dpi = 250)
 #3.
 
 #Level 1
-fig4, ax4 = plt.subplots(figsize = (10, 6), dpi = 250)
+fig4, ax4 = plt.subplots(figsize = (4, 6), dpi = 250)
 data_level1_k1 = np.loadtxt("unorm_aufgabe1_level1_k1")
 iterations_level1_k1 = data_level1_k1[:, 0]
 u_norm_level1_k1 = data_level1_k1[:,1]
@@ -41,13 +41,14 @@ for i in range(3):
             plt.plot(iterations_level1, u_norm_level1, label = f'$k = {41+20*i}$')            
 ax4.set_xlabel("Iterationszahl")
 ax4.set_ylabel("$||u||$")
+ax4.set_xscale('log')
 ax4.set_title("Level 1")
 ax4.grid()        
 ax4.legend()            
 plt.savefig('../figs/h1_level1', dpi = 250)
 
 #Level 2
-fig5, ax5 = plt.subplots(figsize = (10, 6), dpi = 250)
+fig5, ax5 = plt.subplots(figsize = (4, 6), dpi = 250)
 data_level2_k1 = np.loadtxt("unorm_aufgabe1_level2_k1")
 iterations_level2_k1 = data_level2_k1[:, 0]
 u_norm_level2_k1 = data_level2_k1[:,1]
@@ -61,13 +62,14 @@ for i in range(3):
             plt.plot(iterations_level2, u_norm_level2, label = f'$k = {41+20*i}$')            
 ax5.set_xlabel("Iterationszahl")
 ax5.set_ylabel("$||u||$")
+ax5.set_xscale('log')
 ax5.set_title("Level 2")
 ax5.grid()        
 ax5.legend()            
 plt.savefig('../figs/h1_level2', dpi = 250)
 
 #Level 3
-fig6, ax6 = plt.subplots(figsize = (10, 6), dpi = 250)
+fig6, ax6 = plt.subplots(figsize = (4, 6), dpi = 250)
 data_level3_k1 = np.loadtxt("unorm_aufgabe1_level3_k1")
 iterations_level3_k1 = data_level3_k1[:, 0]
 u_norm_level3_k1 = data_level3_k1[:,1]
@@ -81,13 +83,14 @@ for i in range(3):
             plt.plot(iterations_level3, u_norm_level3, label = f'$k = {41+20*i}$')            
 ax6.set_xlabel("Iterationszahl")
 ax6.set_ylabel("$||u||$")
+ax6.set_xscale('log')
 ax6.set_title("Level 3")
 ax6.grid()        
 ax6.legend()            
 plt.savefig('../figs/h1_level3', dpi = 250)
 
 #Level 4
-fig7, ax7 = plt.subplots(figsize = (10, 6), dpi = 250)
+fig7, ax7 = plt.subplots(figsize = (4, 6), dpi = 250)
 data_level4_k1 = np.loadtxt("unorm_aufgabe1_level4_k1")
 iterations_level4_k1 = data_level4_k1[:, 0]
 u_norm_level4_k1 = data_level4_k1[:,1]
@@ -101,13 +104,14 @@ for i in range(3):
             plt.plot(iterations_level4, u_norm_level4, label = f'$k = {41+20*i}$')            
 ax7.set_xlabel("Iterationszahl")
 ax7.set_ylabel("$||u||$")
+ax7.set_xscale('log')
 ax7.set_title("Level 4")
 ax7.grid()        
 ax7.legend()            
 plt.savefig('../figs/h1_level4', dpi = 250)
 
 #Level 5
-fig8, ax8 = plt.subplots(figsize = (10, 6), dpi = 250)
+fig8, ax8 = plt.subplots(figsize = (4, 6), dpi = 250)
 data_level5_k1 = np.loadtxt("unorm_aufgabe1_level5_k1")
 iterations_level5_k1 = data_level5_k1[:, 0]
 u_norm_level5_k1 = data_level5_k1[:,1]
@@ -121,6 +125,7 @@ for i in range(3):
             plt.plot(iterations_level5, u_norm_level5, label = f'$k = {41+20*i}$')            
 ax8.set_xlabel("Iterationszahl")
 ax8.set_ylabel("$||u||$")
+ax8.set_xscale('log')
 ax8.set_title("Level 5")
 ax8.grid()        
 ax8.legend()            
