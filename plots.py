@@ -18,42 +18,12 @@ for i in range(6):
             iterations = data[:, 0]
             u_norm = data[:, 1]
             plt.plot(iterations, u_norm, label = f'$k = {21+20*i}$')            
-ax1.set_xlabel("Iterationszahl")
+ax1.set_xlabel("log_10(Iterationszahl)")
 ax1.set_ylabel("$||u||$")
+ax1.set_xscale('log')
 ax1.grid()        
 ax1.legend()            
 plt.savefig('../figs/h1_comparison_plot_1', dpi = 250)
-
-fig2, ax2 = plt.subplots(figsize = (10, 6), dpi = 250)
-for i in range(6):
-    for file in os.listdir("."):
-        if f'level1_k{21+20*i}' in file:
-            data = np.loadtxt(file)
-            iterations = data[:, 0]
-            u_norm = data[:, 1]
-            plt.plot(iterations, u_norm, label = f'$k = {21+20*i}$')
-ax2.set_xlabel("Iterationszahl")
-ax2.set_ylabel("$||u||$")
-ax2.set_xlim(1, 100)
-ax2.grid()        
-ax2.legend()            
-plt.savefig('../figs/h1_comparison_plot_2', dpi = 250)
-
-fig3, ax3 = plt.subplots(figsize = (10, 6), dpi = 250)
-for i in range(6):
-    for file in os.listdir("."):
-        if f'level1_k{21+20*i}' in file:
-            data = np.loadtxt(file)
-            iterations = data[:, 0]
-            u_norm = data[:, 1]
-            plt.plot(iterations, u_norm, label = f'$k = {21+20*i}$')
-ax3.set_xlabel("Iterationszahl")
-ax3.set_ylabel("$||u||$")
-ax3.set_xlim(1, 20)
-ax3.grid()        
-ax3.legend()            
-plt.savefig('../figs/h1_comparison_plot_3', dpi = 250)
-
 #3.
 
 #Level 1
@@ -221,80 +191,19 @@ plt.plot(x_res_norm_level1_n6, y_res_norm_level1_n6, label = '$N = 6$')
 plt.plot(x_res_norm_level1_n8, y_res_norm_level1_n8, label = '$N = 8$')
 plt.plot(x_res_norm_level1_n10, y_res_norm_level1_n10, label = '$N = 10$')
 plt.plot(x_res_norm_level1_n12, y_res_norm_level1_n12, label = '$N = 12$')
-ax10.set_xlabel("Iterationszahl")
+ax10.set_xlabel("log_10(Iterationszahl)")
 ax10.set_ylabel("$||res||$")
+ax10.set_xscale('log')
 ax10.grid()
 ax10.legend()
 plt.savefig('../figs/h2_N_comparison_1', dpi = 250)
 
-fig11, ax11 = plt.subplots(figsize = (10, 6), dpi = 250)
-plt.plot(x_res_norm_level1_n4, y_res_norm_level1_n4, label = '$N = 4$')
-plt.plot(x_res_norm_level1_n6, y_res_norm_level1_n6, label = '$N = 6$')
-plt.plot(x_res_norm_level1_n8, y_res_norm_level1_n8, label = '$N = 8$')
-plt.plot(x_res_norm_level1_n10, y_res_norm_level1_n10, label = '$N = 10$')
-ax11.set_xlabel("Iterationszahl")
-ax11.set_ylabel("$||res||$")
-ax11.grid()
-ax11.legend()
-plt.savefig('../figs/h2_N_comparison_2', dpi = 250)
-
-fig12, ax12 = plt.subplots(figsize = (10, 6), dpi = 250)
-plt.plot(x_res_norm_level1_n4, y_res_norm_level1_n4, label = '$N = 4$')
-plt.plot(x_res_norm_level1_n6, y_res_norm_level1_n6, label = '$N = 6$')
-plt.plot(x_res_norm_level1_n8, y_res_norm_level1_n8, label = '$N = 8$')
-ax12.set_xlabel("Iterationszahl")
-ax12.set_ylabel("$||res||$")
-ax12.grid()
-ax12.legend()
-plt.savefig('../figs/h2_N_comparison_3', dpi = 250)
-
 #4.
-fig13, ax13 = plt.subplots(figsize = (10, 6), dpi = 250)
-plt.plot(x_res_norm_level1_n4, y_res_norm_level1_n4, label = 'Level 1')
-plt.plot(x_res_norm_level2_n4, y_res_norm_level2_n4, label = 'Level 2')
-ax13.set_xlabel("Iterationszahl")
-ax13.set_ylabel("$||res||$")
-ax13.set_title("$N = 4$")
-ax13.grid()
-ax13.legend()
-plt.savefig('../figs/h2_level_comparison_n4', dpi = 250)
-
-fig14, ax14 = plt.subplots(figsize = (10, 6), dpi = 250)
-plt.plot(x_res_norm_level1_n6, y_res_norm_level1_n6, label = 'Level 1')
-plt.plot(x_res_norm_level4_n6, y_res_norm_level4_n6, label = 'Level 4')
-ax14.set_xlabel("Iterationszahl")
-ax14.set_ylabel("$||res||$")
-ax14.set_title("$N = 6$")
-ax14.grid()
-ax14.legend()
-plt.savefig('../figs/h2_level_comparison_n6', dpi = 250)
-
-fig15, ax15 = plt.subplots(figsize = (10, 6), dpi = 250)
-plt.plot(x_res_norm_level1_n8, y_res_norm_level1_n8, label = 'Level 1')
-plt.plot(x_res_norm_level6_n8, y_res_norm_level6_n8, label = 'Level 6')
-ax15.set_xlabel("Iterationszahl")
-ax15.set_ylabel("$||res||$")
-ax15.set_title("$N = 8$")
-ax15.grid()
-ax15.legend()
-plt.savefig('../figs/h2_level_comparison_n8', dpi = 250)
-
-fig16, ax16 = plt.subplots(figsize = (10, 6), dpi = 250)
-plt.plot(x_res_norm_level1_n10, y_res_norm_level1_n10, label = 'Level 1')
-plt.plot(x_res_norm_level8_n10, y_res_norm_level8_n10, label = 'Level 8')
-ax16.set_xlabel("Iterationszahl")
-ax16.set_ylabel("$||res||$")
-ax16.set_title("$N = 10$")
-ax16.grid()
-ax16.legend()
-plt.savefig('../figs/h2_level_comparison_n10', dpi = 250)
-
-fig17, ax17 = plt.subplots(figsize = (10, 6), dpi = 250)
-plt.plot(x_res_norm_level1_n12, y_res_norm_level1_n12, label = 'Level 1')
-plt.plot(x_res_norm_level10_n12, y_res_norm_level10_n12, label = 'Level 10')
-ax17.set_xlabel("Iterationszahl")
-ax17.set_ylabel("$||res||$")
-ax17.set_title("$N = 12$")
-ax17.grid()
-ax17.legend()
-plt.savefig('../figs/h2_level_comparison_n12', dpi = 250)
+convergence_vel = np.array([np.max(x_res_norm_level2_n4), np.max(x_res_norm_level4_n6), np.max(x_res_norm_level6_n8), np.max(x_res_norm_level8_n10), np.max(x_res_norm_level10_n12)])
+N = np.array([4,6,8,10,12])
+fig18, ax18 = plt.subplots(figsize = (10, 6), dpi = 250)
+plt.plot(N, convergence_vel)
+ax18.set_xlabel("N")
+ax18.set_ylabel("maximale Iterationszahl")
+ax18.grid()
+plt.savefig('../figs/h2_last_plot', dpi = 250)
