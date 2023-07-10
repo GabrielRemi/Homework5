@@ -4,7 +4,7 @@ import os
 
 #####-Aufgabe 1-#####
 
-#1.
+#2.
 os.chdir("results")
 fig1, ax1 = plt.subplots(figsize = (10, 6), dpi = 250)
 data_k1 = np.loadtxt("unorm_aufgabe1_level1_k1")
@@ -54,7 +54,7 @@ ax3.grid()
 ax3.legend()            
 plt.savefig('../figs/h1_comparison_plot_3', dpi = 250)
 
-#2.
+#3.
 
 #Level 1
 fig4, ax4 = plt.subplots(figsize = (10, 6), dpi = 250)
@@ -168,3 +168,133 @@ ax9.set_ylabel("$||u||$")
 ax9.grid()
 ax9.legend()
 plt.savefig('../figs/h1_level_comparison', dpi = 250)
+
+#####-Aufgabe 2-#####
+
+#import data
+
+res_norm_level1_n4 = np.loadtxt("res_norm_aufgabe2_multi=0_N=4")
+x_res_norm_level1_n4 = res_norm_level1_n4[:, 0]
+y_res_norm_level1_n4 = res_norm_level1_n4[:, 1]
+
+res_norm_level1_n6 = np.loadtxt("res_norm_aufgabe2_multi=0_N=6")
+x_res_norm_level1_n6 = res_norm_level1_n6[:, 0]
+y_res_norm_level1_n6 = res_norm_level1_n6[:, 1]
+
+res_norm_level1_n8 = np.loadtxt("res_norm_aufgabe2_multi=0_N=8")
+x_res_norm_level1_n8 = res_norm_level1_n8[:, 0]
+y_res_norm_level1_n8 = res_norm_level1_n8[:, 1]
+
+res_norm_level1_n10 = np.loadtxt("res_norm_aufgabe2_multi=0_N=10")
+x_res_norm_level1_n10 = res_norm_level1_n10[:, 0]
+y_res_norm_level1_n10 = res_norm_level1_n10[:, 1]
+
+res_norm_level1_n12 = np.loadtxt("res_norm_aufgabe2_multi=0_N=12")
+x_res_norm_level1_n12 = res_norm_level1_n12[:, 0]
+y_res_norm_level1_n12 = res_norm_level1_n12[:, 1]
+
+#higher Levels
+res_norm_level2_n4 = np.loadtxt("res_norm_aufgabe2_multi=1_N=4")
+x_res_norm_level2_n4 = res_norm_level2_n4[:, 0]
+y_res_norm_level2_n4 = res_norm_level2_n4[:, 1]
+
+res_norm_level4_n6 = np.loadtxt("res_norm_aufgabe2_multi=1_N=6")
+x_res_norm_level4_n6 = res_norm_level4_n6[:, 0]
+y_res_norm_level4_n6 = res_norm_level4_n6[:, 1]
+
+res_norm_level6_n8 = np.loadtxt("res_norm_aufgabe2_multi=1_N=8")
+x_res_norm_level6_n8 = res_norm_level6_n8[:, 0]
+y_res_norm_level6_n8 = res_norm_level6_n8[:, 1]
+
+res_norm_level8_n10 = np.loadtxt("res_norm_aufgabe2_multi=1_N=10")
+x_res_norm_level8_n10 = res_norm_level8_n10[:, 0]
+y_res_norm_level8_n10 = res_norm_level8_n10[:, 1]
+
+res_norm_level10_n12 = np.loadtxt("res_norm_aufgabe2_multi=1_N=12")
+x_res_norm_level10_n12 = res_norm_level10_n12[:, 0]
+y_res_norm_level10_n12 = res_norm_level10_n12[:, 1]
+
+#3.
+fig10, ax10 = plt.subplots(figsize = (10, 6), dpi = 250)
+plt.plot(x_res_norm_level1_n4, y_res_norm_level1_n4, label = '$N = 4$')
+plt.plot(x_res_norm_level1_n6, y_res_norm_level1_n6, label = '$N = 6$')
+plt.plot(x_res_norm_level1_n8, y_res_norm_level1_n8, label = '$N = 8$')
+plt.plot(x_res_norm_level1_n10, y_res_norm_level1_n10, label = '$N = 10$')
+plt.plot(x_res_norm_level1_n12, y_res_norm_level1_n12, label = '$N = 12$')
+ax10.set_xlabel("Iterationszahl")
+ax10.set_ylabel("$||res||$")
+ax10.grid()
+ax10.legend()
+plt.savefig('../figs/h2_N_comparison_1', dpi = 250)
+
+fig11, ax11 = plt.subplots(figsize = (10, 6), dpi = 250)
+plt.plot(x_res_norm_level1_n4, y_res_norm_level1_n4, label = '$N = 4$')
+plt.plot(x_res_norm_level1_n6, y_res_norm_level1_n6, label = '$N = 6$')
+plt.plot(x_res_norm_level1_n8, y_res_norm_level1_n8, label = '$N = 8$')
+plt.plot(x_res_norm_level1_n10, y_res_norm_level1_n10, label = '$N = 10$')
+ax11.set_xlabel("Iterationszahl")
+ax11.set_ylabel("$||res||$")
+ax11.grid()
+ax11.legend()
+plt.savefig('../figs/h2_N_comparison_2', dpi = 250)
+
+fig12, ax12 = plt.subplots(figsize = (10, 6), dpi = 250)
+plt.plot(x_res_norm_level1_n4, y_res_norm_level1_n4, label = '$N = 4$')
+plt.plot(x_res_norm_level1_n6, y_res_norm_level1_n6, label = '$N = 6$')
+plt.plot(x_res_norm_level1_n8, y_res_norm_level1_n8, label = '$N = 8$')
+ax12.set_xlabel("Iterationszahl")
+ax12.set_ylabel("$||res||$")
+ax12.grid()
+ax12.legend()
+plt.savefig('../figs/h2_N_comparison_3', dpi = 250)
+
+#4.
+fig13, ax13 = plt.subplots(figsize = (10, 6), dpi = 250)
+plt.plot(x_res_norm_level1_n4, y_res_norm_level1_n4, label = 'Level 1')
+plt.plot(x_res_norm_level2_n4, y_res_norm_level2_n4, label = 'Level 2')
+ax13.set_xlabel("Iterationszahl")
+ax13.set_ylabel("$||res||$")
+ax13.set_title("$N = 4$")
+ax13.grid()
+ax13.legend()
+plt.savefig('../figs/h2_level_comparison_n4', dpi = 250)
+
+fig14, ax14 = plt.subplots(figsize = (10, 6), dpi = 250)
+plt.plot(x_res_norm_level1_n6, y_res_norm_level1_n6, label = 'Level 1')
+plt.plot(x_res_norm_level4_n6, y_res_norm_level4_n6, label = 'Level 4')
+ax14.set_xlabel("Iterationszahl")
+ax14.set_ylabel("$||res||$")
+ax14.set_title("$N = 6$")
+ax14.grid()
+ax14.legend()
+plt.savefig('../figs/h2_level_comparison_n6', dpi = 250)
+
+fig15, ax15 = plt.subplots(figsize = (10, 6), dpi = 250)
+plt.plot(x_res_norm_level1_n8, y_res_norm_level1_n8, label = 'Level 1')
+plt.plot(x_res_norm_level6_n8, y_res_norm_level6_n8, label = 'Level 6')
+ax15.set_xlabel("Iterationszahl")
+ax15.set_ylabel("$||res||$")
+ax15.set_title("$N = 8$")
+ax15.grid()
+ax15.legend()
+plt.savefig('../figs/h2_level_comparison_n8', dpi = 250)
+
+fig16, ax16 = plt.subplots(figsize = (10, 6), dpi = 250)
+plt.plot(x_res_norm_level1_n10, y_res_norm_level1_n10, label = 'Level 1')
+plt.plot(x_res_norm_level8_n10, y_res_norm_level8_n10, label = 'Level 8')
+ax16.set_xlabel("Iterationszahl")
+ax16.set_ylabel("$||res||$")
+ax16.set_title("$N = 10$")
+ax16.grid()
+ax16.legend()
+plt.savefig('../figs/h2_level_comparison_n10', dpi = 250)
+
+fig17, ax17 = plt.subplots(figsize = (10, 6), dpi = 250)
+plt.plot(x_res_norm_level1_n12, y_res_norm_level1_n12, label = 'Level 1')
+plt.plot(x_res_norm_level10_n12, y_res_norm_level10_n12, label = 'Level 10')
+ax17.set_xlabel("Iterationszahl")
+ax17.set_ylabel("$||res||$")
+ax17.set_title("$N = 12$")
+ax17.grid()
+ax17.legend()
+plt.savefig('../figs/h2_level_comparison_n12', dpi = 250)
