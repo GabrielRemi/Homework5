@@ -216,7 +216,6 @@ void ODESolver::twolevel_method(vector<double> &u, vector<double> &gvec, vector<
             vector<double> residual_fine_grid = residual(gvec, svec, u, level);
             vector<double> residual_coarse_grid = restrict(residual_fine_grid);
 
-            unsigned long fine_grid_size = residual_fine_grid.size();
             unsigned long coarse_grid_size = residual_coarse_grid.size();
 
             // BERECHNE FEHLER AUF NIEDRIGSTEM LEVEL

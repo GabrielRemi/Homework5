@@ -8,9 +8,12 @@ RESDIR = results
 FIGDIR = figs
 COBJ = $(patsubst %, $(BUILDDIR)/%, $(CFILES:.cpp=.o))
 BIN = $(BUILDDIR)/app
+PDF = main.pdf
+TAR = fischer_remiszewski_h5.tar
 
 all: mkdirs $(BIN)
 	$(BIN)
+	python3 plots.py
 	
 mkdirs:
 	mkdir -p $(BUILDDIR) $(RESDIR) $(FIGDIR)
@@ -24,24 +27,13 @@ $(BUILDDIR)/%.o: %.cpp
 clean:
 	rm -r $(BUILDDIR) $(RESDIR) $(FIGDIR)
 
-test: test.cpp misc.cpp odesolver.cpp
-	$(CC) $(CFLAGS) $^ -o test
-	./test
-	rm -r test
 
 login:
 	ssh s6garemi@cip-pool.physik.uni-bonn.de
 
-reference:
-	gcc zg-full.c $(CFLAGS) -o zg -lm
-	./zg
-	rm -r zg
+distribute: tar
+	scp $(TAR) s6garemi@cip-pool.physik.uni-bonn.de:~/Computer_Physik
 
-rami:
-	gcc $(CFLAGS) rami.c -o rami -lm
-	./rami
-	rm -r rami
 
-echo:
-	echo $(CFILES)
-	echo $(COBJ)
+tar: clean
+	tar -cvf $(TAR) header/* $(PDF) $(CFILES) plots.py makefile

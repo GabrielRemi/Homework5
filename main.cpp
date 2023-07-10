@@ -104,7 +104,7 @@ void aufgabe_2()
     fprintf(stdout, "\n------[AUFGABE 2]------\n");
     unsigned int n[] = {4, 6, 8, 10, 12};
     unsigned int n_size = sizeof(n) / sizeof(int);
-    for (int i = 0; i < n_size; ++i)
+    for (unsigned int i = 0; i < n_size; ++i)
     {
         // Berechnet dgl einmal ohne und einmal mit multigrid
         calc_res_norm(false, n[i]);
