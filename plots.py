@@ -39,7 +39,7 @@ for i in range(3):
             iterations_level1 = data_level1[:, 0]
             u_norm_level1 = data_level1[:, 1]
             plt.plot(iterations_level1, u_norm_level1, label = f'$k = {41+20*i}$')            
-ax4.set_xlabel("Iterationszahl")
+ax4.set_xlabel("log_10(Iterationszahl)")
 ax4.set_ylabel("$||u||$")
 ax4.set_xscale('log')
 ax4.set_title("Level 1")
@@ -60,7 +60,7 @@ for i in range(3):
             iterations_level2 = data_level2[:, 0]
             u_norm_level2 = data_level2[:, 1]
             plt.plot(iterations_level2, u_norm_level2, label = f'$k = {41+20*i}$')            
-ax5.set_xlabel("Iterationszahl")
+ax5.set_xlabel("log_10(Iterationszahl)")
 ax5.set_ylabel("$||u||$")
 ax5.set_xscale('log')
 ax5.set_title("Level 2")
@@ -81,7 +81,7 @@ for i in range(3):
             iterations_level3 = data_level3[:, 0]
             u_norm_level3 = data_level3[:, 1]
             plt.plot(iterations_level3, u_norm_level3, label = f'$k = {41+20*i}$')            
-ax6.set_xlabel("Iterationszahl")
+ax6.set_xlabel("log_10(Iterationszahl)")
 ax6.set_ylabel("$||u||$")
 ax6.set_xscale('log')
 ax6.set_title("Level 3")
@@ -102,7 +102,7 @@ for i in range(3):
             iterations_level4 = data_level4[:, 0]
             u_norm_level4 = data_level4[:, 1]
             plt.plot(iterations_level4, u_norm_level4, label = f'$k = {41+20*i}$')            
-ax7.set_xlabel("Iterationszahl")
+ax7.set_xlabel("log_10(Iterationszahl)")
 ax7.set_ylabel("$||u||$")
 ax7.set_xscale('log')
 ax7.set_title("Level 4")
@@ -123,7 +123,7 @@ for i in range(3):
             iterations_level5 = data_level5[:, 0]
             u_norm_level5 = data_level5[:, 1]
             plt.plot(iterations_level5, u_norm_level5, label = f'$k = {41+20*i}$')            
-ax8.set_xlabel("Iterationszahl")
+ax8.set_xlabel("log_10(Iterationszahl)")
 ax8.set_ylabel("$||u||$")
 ax8.set_xscale('log')
 ax8.set_title("Level 5")
