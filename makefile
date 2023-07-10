@@ -24,7 +24,7 @@ $(BUILDDIR)/%.o: %.cpp
 clean:
 	rm -r $(BUILDDIR) $(RESDIR) $(FIGDIR)
 
-test: test.cpp misc.cpp
+test: test.cpp misc.cpp odesolver.cpp
 	$(CC) $(CFLAGS) $^ -o test
 	./test
 	rm -r test
@@ -36,6 +36,11 @@ reference:
 	gcc zg-full.c $(CFLAGS) -o zg -lm
 	./zg
 	rm -r zg
+
+rami:
+	gcc $(CFLAGS) rami.c -o rami -lm
+	./rami
+	rm -r rami
 
 echo:
 	echo $(CFILES)

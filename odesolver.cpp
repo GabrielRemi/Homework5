@@ -1,7 +1,5 @@
 #include "header/odesolver.hpp"
 
-#define THOMAS 1
-
 ODESolver::ODESolver(double xa, double xe, unsigned long n, func_type g, func_type s, double init_value)
 {
     this->start_point = xa;
@@ -146,21 +144,22 @@ vector<double> ODESolver::interpolate(const vector<double> &vec)
     return interpolated_vec;
 }
 
-vector<double> ODESolver::thomas_algorithm(const vector<double> &y, const double h)
+vector<double> ODESolver::thomas_algorithm(const vector<double> &y, const vector<double> &gvec, const double h)
 {
+    /*Löst die Gleichung A*u = f, wobei auf die Werte der Hauptdiagonalen 1/h^2(2 - h^2 g_i) sind und -1 auf den Nebendiagonalen*/
     unsigned long y_size = y.size();
     vector<double> d(y_size);
     vector<double> c(y_size);
     double hh = h * h;
 
     // STARTWERTE
-    d[0] = hh * y[0] / 2;
-    c[0] = -0.5;
+    d[0] = hh * y[0] / (2 - hh * gvec[0]);
+    c[0] = 1 / (hh * gvec[0] - 2);
 
     for (unsigned long i = 1; i < y_size; ++i)
     {
-        d[i] = (hh * y[i] + d[i - 1]) / (2 + c[i - 1]);
-        c[i] = -1 / (2 + c[i - 1]);
+        d[i] = (hh * y[i] + d[i - 1]) / (2 - hh * gvec[i] + c[i - 1]);
+        c[i] = -1 / (2 - hh * gvec[i] + c[i - 1]);
     }
 
     vector<double> x(y_size);
@@ -191,127 +190,118 @@ void ODESolver::gauss_seidel(vector<double> &u, vector<double> &gvec, vector<dou
 
 void ODESolver::gauss_seidel()
 {
-    unsigned long size = u.size();
-    if (!(size == svec.size() && size == gvec.size()))
-    {
-        fprintf(stderr, "Fehler gauss_seidel: vektoren müssen gleich viele Elemente besitzen\n");
-        exit(-1);
-    }
-    double step_squared = stepwidth * stepwidth;
-
-    u[0] = (1 - relaxation) * u[0] + relaxation * (u[1] - step_squared * svec[0]) / (2 - step_squared * gvec[0]);
-    for (unsigned long i = 1; i < size - 1; ++i)
-        u[i] = (1. - relaxation) * u[i] + relaxation * (u[i + 1] + u[i - 1] - step_squared * svec[i]) / (2. - step_squared * gvec[i]);
-
-    u[size - 1] = (1 - relaxation) * u[size - 1] + relaxation * (u[size - 2] - step_squared * svec[size - 1]) / (2 - step_squared * gvec[size - 1]);
+    gauss_seidel(u, gvec, svec, 1);
 }
 
 void ODESolver::twolevel_method(vector<double> &u, vector<double> &gvec, vector<double> &svec, unsigned int pre_smooth, unsigned int post_smooth, unsigned int level)
 {
-#if THOMAS == 1
-    /* In allen Schritten werden die Residuen und Fehler an den Randpunkten nicht beachtet, da diese immer 0 sind. Dies führt zu einer Verschiebung der Indizes im Vergleich
-    zu den mathematischen Formeln*/
-
-    if (max_level == 1)
+    // BENUTZE AUF GRÖBSTEN GITTER DEN THOMAS-ALGORITHMUS
+    if (thomas == true)
     {
-        gauss_seidel();
-        return;
-    }
-
-    // GLÄTTUNG
-    if (level < max_level)
-        for (unsigned int i = 0; i < pre_smooth; ++i)
-            gauss_seidel(u, gvec, svec, level);
-
-    vector<double> error_fine_grid;
-    if (level < max_level)
-    {
-        vector<double> residual_fine_grid = residual(gvec, svec, u, level);
-        vector<double> residual_coarse_grid = restrict(residual_fine_grid);
-
-        unsigned long fine_grid_size = residual_fine_grid.size();
-        unsigned long coarse_grid_size = residual_coarse_grid.size();
-
-        // BERECHNE FEHLER AUF NIEDRIGSTEM LEVEL
-        vector<double> error_coarse_grid(coarse_grid_size);
-
-        vector<double> gvec(coarse_grid_size);
-        vector<double> svec(coarse_grid_size);
-        for (unsigned long i = 0; i < coarse_grid_size; ++i)
+        // falls nur ein level, führe nur eine gauss-seidel iteration durch
+        if (max_level == 1)
         {
-            svec[i] = -residual_coarse_grid[i];
-            gvec[i] = 0;
+            gauss_seidel();
+            return;
         }
-        twolevel_method(error_coarse_grid, gvec, svec, pre_smooth, post_smooth, level + 1);
-        error_fine_grid = interpolate(error_coarse_grid);
-        // for (unsigned long i = 0; i < u.size(); ++i)
-        //     u[i] += error_fine_grid[i];
+
+        vector<double> error_fine_grid;
+        if (level < max_level)
+        {
+            // VOR-GLÄTTUNG
+            for (unsigned int i = 0; i < pre_smooth; ++i)
+                gauss_seidel(u, gvec, svec, level);
+
+            // RESIDUENVEKTOREN UND FEHLER
+            vector<double> residual_fine_grid = residual(gvec, svec, u, level);
+            vector<double> residual_coarse_grid = restrict(residual_fine_grid);
+
+            unsigned long fine_grid_size = residual_fine_grid.size();
+            unsigned long coarse_grid_size = residual_coarse_grid.size();
+
+            // BERECHNE FEHLER AUF NIEDRIGSTEM LEVEL
+            vector<double> error_coarse_grid(coarse_grid_size);
+
+            vector<double> gvec_coarse_grid(coarse_grid_size);
+            vector<double> svec_coarse_grid(coarse_grid_size);
+            for (unsigned long i = 0; i < coarse_grid_size; ++i)
+            {
+                svec_coarse_grid[i] = -residual_coarse_grid[i];
+                gvec_coarse_grid[i] = gvec[2 * i + 1];
+            }
+
+            // REKURSION DER ZWEIGITTER-VERFAHRENS
+            twolevel_method(error_coarse_grid, gvec_coarse_grid, svec_coarse_grid, pre_smooth, post_smooth, level + 1);
+            error_fine_grid = interpolate(error_coarse_grid);
+
+            // ADDIERE FEHLER ZUR NÄHERUNG
+            for (unsigned long i = 0; i < u.size(); ++i)
+                u[i] += error_fine_grid[i];
+
+            // NACH-GLÄTTUNG
+            for (unsigned int i = 0; i < post_smooth; ++i)
+                gauss_seidel(u, gvec, svec, level);
+        }
+        else
+        {
+            // BERECHNE AUF GRÖBSTEN GITTER DEN FEHLER EXAKT
+            double h = pow(2, level - 1) * stepwidth;
+            error_fine_grid = thomas_algorithm(svec, gvec, h);
+
+            // ADDIERE FEHLER ZUR NÄHERUNG
+            for (unsigned long i = 0; i < u.size(); ++i)
+                u[i] += error_fine_grid[i];
+        }
     }
     else
     {
-        vector<double> f(svec.size());
-        for (unsigned long i = 0; i < svec.size(); ++i)
-            f[i] = -svec[i];
-        error_fine_grid = thomas_algorithm(f, pow(2, level - 1) * stepwidth);
-    }
+        // GLÄTTUNG
+        for (unsigned int i = 0; i < pre_smooth; ++i)
+            gauss_seidel(u, gvec, svec, level);
 
-    // ADDIERE FEHLER ZU <u>
-    for (unsigned long i = 0; i < u.size(); ++i)
-        u[i] += error_fine_grid[i];
+        if (level < max_level)
+        {
+            vector<double> residual_fine_grid = residual(gvec, svec, u, level);
+            vector<double> residual_coarse_grid = restrict(residual_fine_grid);
 
-    // NACH-GLÄTTUNG
-    if (level < max_level)
+            unsigned long fine_grid_size = residual_fine_grid.size();
+            unsigned long coarse_grid_size = residual_coarse_grid.size();
+
+            vector<double> error_coarse_grid(coarse_grid_size);
+
+            vector<double> gvec_coarse_grid(coarse_grid_size);
+            vector<double> svec_coarse_grid(coarse_grid_size);
+            for (unsigned int i = 0; i < coarse_grid_size; ++i)
+            {
+                svec_coarse_grid[i] = -residual_coarse_grid[i];
+                gvec_coarse_grid[i] = gvec[2 * i + 1];
+            }
+
+            // Berechne Fehler auf nächstem gitter
+            twolevel_method(error_coarse_grid, gvec_coarse_grid, svec_coarse_grid, pre_smooth, post_smooth, level + 1);
+            vector<double> error_fine_grid = interpolate(error_coarse_grid);
+
+            // ADDIERE FEHLER ZU <u>
+            for (unsigned long i = 0; i < fine_grid_size; ++i)
+                u[i] += error_fine_grid[i];
+        }
+
+        // NACH-GLÄTTUNG
         for (unsigned int i = 0; i < post_smooth; ++i)
             gauss_seidel(u, gvec, svec, level);
-#elif THOMAS == 0
-
-    /* In allen Schritten werden die Residuen und Fehler an den Randpunkten nicht beachtet, da diese immer 0 sind. Dies führt zu einer Verschiebung der Indizes im Vergleich
-    zu den mathematischen Formeln*/
-    // GLÄTTUNG
-    for (unsigned int i = 0; i < pre_smooth; ++i)
-        gauss_seidel(u, gvec, svec, level);
-
-    if (level < max_level)
-    {
-        vector<double> residual_fine_grid = residual(gvec, svec, u, level);
-
-        vector<double> residual_coarse_grid = restrict(residual_fine_grid);
-
-        unsigned long fine_grid_size = residual_fine_grid.size();
-        unsigned long coarse_grid_size = residual_coarse_grid.size();
-            
-        // BERECHNE FEHLER AUF NIEDRIGSTEM LEVEL
-        vector<double> error_coarse_grid(coarse_grid_size);
-
-        vector<double> gvec(coarse_grid_size);
-        vector<double> svec(coarse_grid_size);
-        for (unsigned long i = 0; i < coarse_grid_size; ++i)
-        {
-            svec[i] = -residual_coarse_grid[i];
-            gvec[i] = 0;
         }
-        twolevel_method(error_coarse_grid, gvec, svec, pre_smooth, post_smooth, level + 1);
-        vector<double> error_fine_grid = interpolate(error_coarse_grid);
-        // error_fine_grid = thomas_algorithm(residual_fine_grid, stepwidth);
-
-        // ADDIERE FEHLER ZU <u>
-        for (unsigned long i = 0; i < fine_grid_size; ++i)
-            u[i] += error_fine_grid[i];
-    }
-
-    // NACH-GLÄTTUNG
-    for (unsigned int i = 0; i < post_smooth; ++i)
-        gauss_seidel(u, gvec, svec, level);
-#endif
 }
 
-unsigned long ODESolver::solve(double eps, vector<double> *u_norms, unsigned int pre_smooth, unsigned int post_smooth)
+unsigned long ODESolver::solve(double eps, vector<double> *u_norms, vector<double> *res_norms, unsigned int pre_smooth, unsigned int post_smooth)
 {
     if (u_norms != nullptr)
         (*u_norms).resize(0);
+    if (res_norms != nullptr)
+        (*res_norms).resize(0);
 
     unsigned int iteration = 0;
-    const unsigned int iteration_max = 80000;
+    const unsigned int iteration_max = 150000;
+
 
     double eps_iter = 2 * eps; // willkürlicher Wert, hauptsache größer eps
 
@@ -320,11 +310,13 @@ unsigned long ODESolver::solve(double eps, vector<double> *u_norms, unsigned int
         twolevel_method(u, gvec, svec, pre_smooth, post_smooth, 1);
 
         eps_iter = get_residual_norm();
-        // iteration += pre_smooth + post_smooth;
+       
         ++iteration;
 
         if (u_norms != nullptr)
             (*u_norms).push_back(misc::norm(u));
+        if (res_norms != nullptr)
+            (*res_norms).push_back(eps_iter);
     }
 
     if (iteration == iteration_max)
@@ -332,6 +324,8 @@ unsigned long ODESolver::solve(double eps, vector<double> *u_norms, unsigned int
 
     if (u_norms != nullptr)
         (*u_norms).shrink_to_fit();
+    if (res_norms != nullptr)
+        (*res_norms).shrink_to_fit();
 
     return iteration;
 }

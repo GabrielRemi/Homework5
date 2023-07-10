@@ -9,7 +9,7 @@ void misc::printInFile(std::string fileName, unsigned int n, ...)
     va_start(args, n);
 
     // Pointer, auf das vektor array der Argumente
-    std::vector<double> **arrayp = new vector<double>*[n * sizeof(double *)];
+    std::vector<double> **arrayp = new vector<double> *[n * sizeof(double *)];
 
     for (unsigned int arg = 0; arg < n; ++arg)
     {
@@ -74,184 +74,14 @@ vector<double> misc::equidistantValues(const double x0, const double xmax, doubl
     return out;
 }
 
-double misc::maximum(std::vector<double> vec)
-{
-    double max = vec[0];
-    for (double elem : vec)
-        if (elem > max)
-            max = elem;
-
-    return max;
-}
-
-/*Nimmt einen vector und berechnet die Differenzen zwischen den Elementen*/
-vector<double> misc::calculateDifferences(vector<double> vec)
-{
-    vector<double> out;
-    for (unsigned int i = 1; i < vec.size(); ++i)
-        out.push_back(vec[i] - vec[i - 1]);
-
-    return out;
-}
-
-double misc::sekant(func_type f, const double xa, const double xe, double eps)
-{
-    if (REL_DIF(xa, xe) < eps)
-    {
-        printf("Startintervall zu klein");
-        return NAN;
-    }
-    double old_x0;
-    double x1 = xa; // Stützstellen des Iterationsverfahrens
-    double x2 = xe;
-    double x0 = x2; // Nullstelle
-
-    unsigned int iteration = 0;
-    unsigned int iteration_max = 100;
-
-    while (REL_DIF(x1, x2) > eps && iteration < iteration_max)
-    {
-        iteration++;
-        old_x0 = x0;
-        // Iterationsformel des Sekantenverfahrens
-        x0 = (x1 * f(x2) - x2 * f(x1)) / (f(x2) - f(x1));
-
-        // verhindere, dass durch null geteilt wird.
-        if (old_x0 == 0 && x0 == 0)
-            break;
-
-#define SHOW_DETAILS 0
-#if SHOW_DETAILS == 1
-        cout.precision(10);
-        cout << "[Sekant]  ";
-        cout << scientific << x1 << " " << x2 << " " << f(x1) << " " << f(x2) << " " << x0 << endl;
-#endif
-
-        x1 = x2;
-        x2 = x0;
-    };
-
-    if (iteration == iteration_max)
-        printf("Keine Konvergenz eingetroffen\n");
-
-    // Damit bei der 0 als Nullstelle das Minuszeichen nicht angezeigt wird
-    if (x0 == 0)
-        x0 = fabs(x0);
-
-    return x0;
-}
-
 double misc::norm(const vector<double> &y)
 {
     double norm = 0;
     for (double elem : y)
-        norm += elem*elem;
+        norm += elem * elem;
     norm = sqrt(norm);
 
     return norm;
-}
-
-double misc::bisection(func_type f, double xa, double xe, const double eps)
-{
-    // FALLS DAS INTERVALL FLASCH GEWÄHLT, BRECHE AB
-    if (xa > xe)
-    {
-        cout << "Fehler: xe muss größer sein als xa" << endl;
-        return NAN;
-    }
-
-    double delta = fabs(xe - xa);
-    // FALLS ANFANGSINTERVALL ZU KLEIN, BRECHE AB
-    if (delta < eps)
-    {
-        cout << "Fehler: Intervall zu klein gewählt. Vergrößere das Intervall oder verkleinere die Zielgenauigkeit" << endl;
-        return NAN;
-    }
-
-    double x0 = 0;
-    double fa = f(xa);
-    double fe = f(xe);
-
-    // UNTERSUCHE DEN RAND AUF NULLSTELLEN
-    if (!(fa * fe <= 0))
-        return NAN;
-    else if (fa == 0)
-        return xa;
-    else if (fe == 0)
-        return xe;
-
-    // HALBIERE DAS INTERVALL
-    delta /= 2;
-    double xMiddle = xa + delta;
-    double fMiddle = f(xMiddle);
-    x0 = xMiddle;
-
-    // HALBIERE INTERVALL, BIS GENAUIGKEIT ERREICHT
-    while (delta > eps)
-    {
-        if (fMiddle == 0)
-            return xMiddle;
-
-        // UTNERSUCHE BEIDE INTERVALLE AUF VORZEICHENWECHSEL
-        delta /= 2;
-        if (fa * fMiddle < 0)
-        {
-            xe = xMiddle;
-            fe = fMiddle;
-            xMiddle = xa + delta;
-            fMiddle = f(xMiddle);
-        }
-        else if (fe * fMiddle < 0)
-        {
-            xa = xMiddle;
-            fa = fMiddle;
-            xMiddle = xe - delta;
-            fMiddle = f(xMiddle);
-        }
-
-        x0 = xMiddle;
-    }
-
-    x0 = xa + delta;
-
-    return x0;
-}
-
-vector<double> misc::eraseNAN(vector<double> &vec)
-{
-    unsigned int size = vec.size();
-    vector<double> out;
-
-    for (unsigned int i = 0; i < size; ++i)
-        if (!isnan(vec[i]))
-            out.push_back(vec[i]);
-
-    return out;
-}
-
-vector<int> misc::localMaximaIndices(const vector<double> &vec, double minimum)
-{
-    vector<int> out;
-
-    for (unsigned int i = 1; i < vec.size() - 1; ++i)
-        if ((vec[i] >= minimum) && (vec[i] > vec[i - 1]) && (vec[i] > vec[i + 1]))
-            out.push_back(i);
-
-    return out;
-}
-
-double misc::trapez(const vector<double> &vec, double h)
-{
-    unsigned int size = vec.size();
-    double output = 0.;
-    output += 0.5 * (vec[0] + vec[size - 1]);
-
-    for (unsigned int i = 1; i < size - 1; ++i)
-        output += vec[i];
-
-    output *= h;
-
-    return output;
 }
 
 vector<double> misc::assignValuesMultithread(vector<double> &vec, func_type f)
